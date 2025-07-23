@@ -1,237 +1,43 @@
-2025-07-22 18:19:30,164:INFO:Logging initialized.
-2025-07-22 18:19:30,625:INFO:Starting churn prediction pipeline
-2025-07-22 18:19:30,721:INFO:Starting preprocessing pipeline
-2025-07-22 18:19:30,818:INFO:Loaded data with shape (7043, 21)
-2025-07-22 18:19:30,847:INFO:Dropped 'customerID' column
-2025-07-22 18:19:30,888:INFO:Capped outliers in 'SeniorCitizen': 1142 values adjusted
-2025-07-22 18:19:30,897:INFO:Capped outliers in 'tenure': 0 values adjusted
-2025-07-22 18:19:30,908:INFO:Capped outliers in 'MonthlyCharges': 0 values adjusted
-2025-07-22 18:19:30,950:INFO:Label encoded binary categorical column: gender
-2025-07-22 18:19:30,958:INFO:Label encoded binary categorical column: Partner
-2025-07-22 18:19:30,965:INFO:Label encoded binary categorical column: Dependents
-2025-07-22 18:19:30,969:INFO:Label encoded binary categorical column: PhoneService
-2025-07-22 18:19:30,974:INFO:Label encoded binary categorical column: PaperlessBilling
-2025-07-22 18:19:30,983:INFO:Dropped non-binary categorical columns: ['MultipleLines', 'InternetService', 'OnlineSecurity', 'OnlineBackup', 'DeviceProtection', 'TechSupport', 'StreamingTV', 'StreamingMovies', 'Contract', 'PaymentMethod', 'TotalCharges']
-2025-07-22 18:19:30,991:INFO:Label encoded target column
-2025-07-22 18:19:31,922:INFO:Saved feature scores to results/metrics/feature_scores.csv
-2025-07-22 18:19:31,922:INFO:Top 20 selected features: ['tenure', 'MonthlyCharges', 'PaperlessBilling', 'Partner', 'Dependents', 'PhoneService', 'gender']
-2025-07-22 18:19:32,134:INFO:Saved cleaned data to data/cleaned_data.csv
-2025-07-22 18:19:32,138:INFO:Completed preprocessing pipeline
-2025-07-22 18:19:32,141:INFO:Training models...
-2025-07-22 18:19:32,142:INFO:Training xgboost...
-2025-07-22 18:19:32,487:INFO:xgboost trained.
-2025-07-22 18:19:32,487:INFO:Training logistic_regression...
-2025-07-22 18:19:32,557:INFO:logistic_regression trained.
-2025-07-22 18:19:32,558:INFO:Training decision_tree...
-2025-07-22 18:19:32,624:INFO:decision_tree trained.
-2025-07-22 18:19:32,627:INFO:Evaluating xgboost
-2025-07-22 18:19:34,342:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_confusion_matrix.png
-2025-07-22 18:19:34,343:INFO:Saved confusion matrix plot for xgboost
-2025-07-22 18:19:34,356:INFO:Saved predictions CSV to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/predictions/xgboost_predictions.csv
-2025-07-22 18:19:34,357:INFO:Evaluating logistic_regression
-2025-07-22 18:19:34,930:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_confusion_matrix.png
-2025-07-22 18:19:34,931:INFO:Saved confusion matrix plot for logistic_regression
-2025-07-22 18:19:34,941:INFO:Saved predictions CSV to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/predictions/logistic_regression_predictions.csv
-2025-07-22 18:19:34,941:INFO:Evaluating decision_tree
-2025-07-22 18:19:35,381:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_confusion_matrix.png
-2025-07-22 18:19:35,382:INFO:Saved confusion matrix plot for decision_tree
-2025-07-22 18:19:35,390:INFO:Saved predictions CSV to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/predictions/decision_tree_predictions.csv
-2025-07-22 18:19:35,398:INFO:Saved aggregated metrics CSV to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/all_metrics.csv
-2025-07-22 18:19:35,398:INFO:Pipeline execution completed
-2025-07-22 18:33:05,285:INFO:Logging initialized.
-2025-07-22 18:33:05,758:INFO:Starting churn prediction pipeline
-2025-07-22 18:33:05,870:INFO:Starting preprocessing pipeline
-2025-07-22 18:33:05,946:INFO:Loaded data with shape (7043, 21)
-2025-07-22 18:33:05,976:INFO:Dropped 'customerID' column
-2025-07-22 18:33:06,013:INFO:Capped outliers in 'SeniorCitizen': 1142 values adjusted
-2025-07-22 18:33:06,021:INFO:Capped outliers in 'tenure': 0 values adjusted
-2025-07-22 18:33:06,030:INFO:Capped outliers in 'MonthlyCharges': 0 values adjusted
-2025-07-22 18:33:06,044:INFO:Label encoded categorical column: gender
-2025-07-22 18:33:06,050:INFO:Label encoded categorical column: Partner
-2025-07-22 18:33:06,055:INFO:Label encoded categorical column: Dependents
-2025-07-22 18:33:06,059:INFO:Label encoded categorical column: PhoneService
-2025-07-22 18:33:06,065:INFO:Label encoded categorical column: MultipleLines
-2025-07-22 18:33:06,071:INFO:Label encoded categorical column: InternetService
-2025-07-22 18:33:06,077:INFO:Label encoded categorical column: OnlineSecurity
-2025-07-22 18:33:06,081:INFO:Label encoded categorical column: OnlineBackup
-2025-07-22 18:33:06,083:INFO:Label encoded categorical column: DeviceProtection
-2025-07-22 18:33:06,085:INFO:Label encoded categorical column: TechSupport
-2025-07-22 18:33:06,087:INFO:Label encoded categorical column: StreamingTV
-2025-07-22 18:33:06,089:INFO:Label encoded categorical column: StreamingMovies
-2025-07-22 18:33:06,091:INFO:Label encoded categorical column: Contract
-2025-07-22 18:33:06,093:INFO:Label encoded categorical column: PaperlessBilling
-2025-07-22 18:33:06,097:INFO:Label encoded categorical column: PaymentMethod
-2025-07-22 18:33:06,135:INFO:Label encoded categorical column: TotalCharges
-2025-07-22 18:33:06,145:INFO:Label encoded target column
-2025-07-22 18:33:08,622:INFO:Saved feature scores to results/metrics/feature_scores.csv
-2025-07-22 18:33:08,623:INFO:Top 20 selected features: ['Contract', 'tenure', 'OnlineSecurity', 'TechSupport', 'OnlineBackup', 'InternetService', 'DeviceProtection', 'MonthlyCharges', 'PaymentMethod', 'StreamingMovies', 'StreamingTV', 'TotalCharges', 'PaperlessBilling', 'Dependents', 'Partner', 'MultipleLines', 'PhoneService', 'gender']
-2025-07-22 18:33:09,161:INFO:Saved cleaned data to data/cleaned_data.csv
-2025-07-22 18:33:09,229:INFO:Completed preprocessing pipeline
-2025-07-22 18:33:09,232:INFO:Training models...
-2025-07-22 18:33:09,243:INFO:Training xgboost...
-2025-07-22 18:37:34,675:INFO:Logging initialized.
-2025-07-22 18:37:35,072:INFO:Starting churn prediction pipeline
-2025-07-22 18:37:35,159:INFO:Starting preprocessing pipeline
-2025-07-22 18:37:35,251:INFO:Loaded data with shape (7043, 21)
-2025-07-22 18:37:35,263:INFO:Dropped 'customerID' column
-2025-07-22 18:37:35,289:INFO:Capped outliers in 'SeniorCitizen': 1142 values adjusted
-2025-07-22 18:37:35,300:INFO:Capped outliers in 'tenure': 0 values adjusted
-2025-07-22 18:37:35,311:INFO:Capped outliers in 'MonthlyCharges': 0 values adjusted
-2025-07-22 18:37:35,328:INFO:Label encoded categorical column: gender
-2025-07-22 18:37:35,335:INFO:Label encoded categorical column: Partner
-2025-07-22 18:37:35,341:INFO:Label encoded categorical column: Dependents
-2025-07-22 18:37:35,345:INFO:Label encoded categorical column: PhoneService
-2025-07-22 18:37:35,350:INFO:Label encoded categorical column: MultipleLines
-2025-07-22 18:37:35,354:INFO:Label encoded categorical column: InternetService
-2025-07-22 18:37:35,359:INFO:Label encoded categorical column: OnlineSecurity
-2025-07-22 18:37:35,363:INFO:Label encoded categorical column: OnlineBackup
-2025-07-22 18:37:35,368:INFO:Label encoded categorical column: DeviceProtection
-2025-07-22 18:37:35,373:INFO:Label encoded categorical column: TechSupport
-2025-07-22 18:37:35,378:INFO:Label encoded categorical column: StreamingTV
-2025-07-22 18:37:35,383:INFO:Label encoded categorical column: StreamingMovies
-2025-07-22 18:37:35,388:INFO:Label encoded categorical column: Contract
-2025-07-22 18:37:35,393:INFO:Label encoded categorical column: PaperlessBilling
-2025-07-22 18:37:35,398:INFO:Label encoded categorical column: PaymentMethod
-2025-07-22 18:37:35,443:INFO:Label encoded categorical column: TotalCharges
-2025-07-22 18:37:35,452:INFO:Label encoded target column
-2025-07-22 18:37:37,362:INFO:Saved feature scores to results/metrics/feature_scores.csv
-2025-07-22 18:37:37,364:INFO:Top 20 selected features: ['Contract', 'tenure', 'OnlineSecurity', 'TechSupport', 'OnlineBackup', 'InternetService', 'DeviceProtection', 'MonthlyCharges', 'PaymentMethod', 'StreamingMovies', 'StreamingTV', 'TotalCharges', 'PaperlessBilling', 'Dependents', 'Partner', 'MultipleLines', 'PhoneService', 'gender']
-2025-07-22 18:37:38,038:INFO:Saved cleaned data to data/cleaned_data.csv
-2025-07-22 18:37:38,055:INFO:Completed preprocessing pipeline
-2025-07-22 18:37:38,060:INFO:Training models...
-2025-07-22 19:53:02,905:INFO:Logging initialized.
-2025-07-22 19:53:03,249:INFO:Starting churn prediction pipeline
-2025-07-22 19:53:03,320:INFO:Starting preprocessing pipeline
-2025-07-22 19:53:03,359:INFO:Loaded data with shape (7043, 21)
-2025-07-22 19:53:03,382:INFO:Dropped 'customerID' column
-2025-07-22 19:53:03,401:INFO:Capped outliers in 'SeniorCitizen': 1142 values adjusted
-2025-07-22 19:53:03,408:INFO:Capped outliers in 'tenure': 0 values adjusted
-2025-07-22 19:53:03,415:INFO:Capped outliers in 'MonthlyCharges': 0 values adjusted
-2025-07-22 19:53:03,423:INFO:Label encoded categorical column: gender
-2025-07-22 19:53:03,425:INFO:Label encoded categorical column: Partner
-2025-07-22 19:53:03,427:INFO:Label encoded categorical column: Dependents
-2025-07-22 19:53:03,429:INFO:Label encoded categorical column: PhoneService
-2025-07-22 19:53:03,431:INFO:Label encoded categorical column: MultipleLines
-2025-07-22 19:53:03,433:INFO:Label encoded categorical column: InternetService
-2025-07-22 19:53:03,435:INFO:Label encoded categorical column: OnlineSecurity
-2025-07-22 19:53:03,439:INFO:Label encoded categorical column: OnlineBackup
-2025-07-22 19:53:03,441:INFO:Label encoded categorical column: DeviceProtection
-2025-07-22 19:53:03,442:INFO:Label encoded categorical column: TechSupport
-2025-07-22 19:53:03,444:INFO:Label encoded categorical column: StreamingTV
-2025-07-22 19:53:03,445:INFO:Label encoded categorical column: StreamingMovies
-2025-07-22 19:53:03,446:INFO:Label encoded categorical column: Contract
-2025-07-22 19:53:03,448:INFO:Label encoded categorical column: PaperlessBilling
-2025-07-22 19:53:03,450:INFO:Label encoded categorical column: PaymentMethod
-2025-07-22 19:53:03,491:INFO:Label encoded categorical column: TotalCharges
-2025-07-22 19:53:03,500:INFO:Label encoded target column
-2025-07-22 19:53:04,289:INFO:Saved feature scores to results/metrics/feature_scores.csv
-2025-07-22 19:53:04,289:INFO:Top 20 selected features: ['Contract', 'tenure', 'OnlineSecurity', 'TechSupport', 'OnlineBackup', 'InternetService', 'DeviceProtection', 'MonthlyCharges', 'PaymentMethod', 'StreamingMovies', 'StreamingTV', 'TotalCharges', 'PaperlessBilling', 'Dependents', 'Partner', 'MultipleLines', 'PhoneService', 'gender']
-2025-07-22 19:53:04,475:INFO:Saved cleaned data to data/cleaned_data.csv
-2025-07-22 19:53:04,483:INFO:Completed preprocessing pipeline
-2025-07-22 19:53:04,486:INFO:Training models...
-2025-07-22 19:53:04,487:INFO:Training xgboost...
-2025-07-23 01:02:47,537:INFO:Logging initialized.
-2025-07-23 01:02:48,052:INFO:Starting churn prediction pipeline
-2025-07-23 01:02:48,159:INFO:Starting preprocessing pipeline
-2025-07-23 01:02:48,235:INFO:Loaded data with shape (7043, 21)
-2025-07-23 01:02:48,260:INFO:Dropped 'customerID' column
-2025-07-23 01:02:48,320:INFO:Capped outliers in 'SeniorCitizen': 1142 values adjusted
-2025-07-23 01:02:48,331:INFO:Capped outliers in 'tenure': 0 values adjusted
-2025-07-23 01:02:48,341:INFO:Capped outliers in 'MonthlyCharges': 0 values adjusted
-2025-07-23 01:02:48,352:INFO:Label encoded categorical column: gender
-2025-07-23 01:02:48,358:INFO:Label encoded categorical column: Partner
-2025-07-23 01:02:48,362:INFO:Label encoded categorical column: Dependents
-2025-07-23 01:02:48,368:INFO:Label encoded categorical column: PhoneService
-2025-07-23 01:02:48,375:INFO:Label encoded categorical column: MultipleLines
-2025-07-23 01:02:48,380:INFO:Label encoded categorical column: InternetService
-2025-07-23 01:02:48,386:INFO:Label encoded categorical column: OnlineSecurity
-2025-07-23 01:02:48,390:INFO:Label encoded categorical column: OnlineBackup
-2025-07-23 01:02:48,395:INFO:Label encoded categorical column: DeviceProtection
-2025-07-23 01:02:48,398:INFO:Label encoded categorical column: TechSupport
-2025-07-23 01:02:48,406:INFO:Label encoded categorical column: StreamingTV
-2025-07-23 01:02:48,411:INFO:Label encoded categorical column: StreamingMovies
-2025-07-23 01:02:48,415:INFO:Label encoded categorical column: Contract
-2025-07-23 01:02:48,421:INFO:Label encoded categorical column: PaperlessBilling
-2025-07-23 01:02:48,426:INFO:Label encoded categorical column: PaymentMethod
-2025-07-23 01:02:48,481:INFO:Label encoded categorical column: TotalCharges
-2025-07-23 01:02:48,493:INFO:Label encoded target column
-2025-07-23 01:02:50,563:INFO:Saved feature scores to results/metrics/feature_scores.csv
-2025-07-23 01:02:50,588:INFO:Top 20 selected features: ['Contract', 'tenure', 'OnlineSecurity', 'TechSupport', 'OnlineBackup', 'InternetService', 'DeviceProtection', 'MonthlyCharges', 'PaymentMethod', 'StreamingMovies', 'StreamingTV', 'TotalCharges', 'PaperlessBilling', 'Dependents', 'Partner', 'MultipleLines', 'PhoneService', 'gender']
-2025-07-23 01:02:51,274:INFO:Saved cleaned data to data/cleaned_data.csv
-2025-07-23 01:02:51,311:INFO:Completed preprocessing pipeline
-2025-07-23 01:02:51,320:INFO:Training models...
-2025-07-23 01:02:51,322:INFO:Training xgboost...
-2025-07-23 01:08:15,034:INFO:Logging initialized.
-2025-07-23 01:08:15,466:INFO:Starting churn prediction pipeline
-2025-07-23 01:08:15,561:INFO:Starting preprocessing pipeline
-2025-07-23 01:08:15,635:INFO:Loaded data with shape (7043, 21)
-2025-07-23 01:08:15,661:INFO:Dropped 'customerID' column
-2025-07-23 01:08:15,704:INFO:Capped outliers in 'SeniorCitizen': 1142 values adjusted
-2025-07-23 01:08:15,714:INFO:Capped outliers in 'tenure': 0 values adjusted
-2025-07-23 01:08:15,731:INFO:Capped outliers in 'MonthlyCharges': 0 values adjusted
-2025-07-23 01:08:15,748:INFO:Label encoded categorical column: gender
-2025-07-23 01:08:15,755:INFO:Label encoded categorical column: Partner
-2025-07-23 01:08:15,762:INFO:Label encoded categorical column: Dependents
-2025-07-23 01:08:15,767:INFO:Label encoded categorical column: PhoneService
-2025-07-23 01:08:15,772:INFO:Label encoded categorical column: MultipleLines
-2025-07-23 01:08:15,777:INFO:Label encoded categorical column: InternetService
-2025-07-23 01:08:15,780:INFO:Label encoded categorical column: OnlineSecurity
-2025-07-23 01:08:15,790:INFO:Label encoded categorical column: OnlineBackup
-2025-07-23 01:08:15,798:INFO:Label encoded categorical column: DeviceProtection
-2025-07-23 01:08:15,801:INFO:Label encoded categorical column: TechSupport
-2025-07-23 01:08:15,807:INFO:Label encoded categorical column: StreamingTV
-2025-07-23 01:08:15,810:INFO:Label encoded categorical column: StreamingMovies
-2025-07-23 01:08:15,814:INFO:Label encoded categorical column: Contract
-2025-07-23 01:08:15,818:INFO:Label encoded categorical column: PaperlessBilling
-2025-07-23 01:08:15,829:INFO:Label encoded categorical column: PaymentMethod
-2025-07-23 01:08:15,889:INFO:Label encoded categorical column: TotalCharges
-2025-07-23 01:08:15,902:INFO:Label encoded target column
-2025-07-23 01:08:17,905:INFO:Saved feature scores to results/metrics/feature_scores.csv
-2025-07-23 01:08:17,907:INFO:Top 20 selected features: ['Contract', 'tenure', 'OnlineSecurity', 'TechSupport', 'OnlineBackup', 'InternetService', 'DeviceProtection', 'MonthlyCharges', 'PaymentMethod', 'StreamingMovies', 'StreamingTV', 'TotalCharges', 'PaperlessBilling', 'Dependents', 'Partner', 'MultipleLines', 'PhoneService', 'gender']
-2025-07-23 01:08:18,484:INFO:Saved cleaned data to data/cleaned_data.csv
-2025-07-23 01:08:18,496:INFO:Completed preprocessing pipeline
-2025-07-23 01:08:18,499:INFO:Training models...
-2025-07-23 01:08:18,506:INFO:Training xgboost...
-2025-07-23 01:39:37,679:INFO:Logging initialized.
-2025-07-23 01:39:38,200:INFO:Starting churn prediction pipeline
-2025-07-23 01:39:38,319:INFO:Starting preprocessing pipeline
-2025-07-23 01:39:38,390:INFO:Loaded data with shape (7043, 21)
-2025-07-23 01:39:38,423:INFO:Dropped 'customerID' column
-2025-07-23 01:39:38,463:INFO:Capped outliers in 'SeniorCitizen': 1142 values adjusted
-2025-07-23 01:39:38,476:INFO:Capped outliers in 'tenure': 0 values adjusted
-2025-07-23 01:39:38,485:INFO:Capped outliers in 'MonthlyCharges': 0 values adjusted
-2025-07-23 01:39:38,498:INFO:Label encoded categorical column: gender
-2025-07-23 01:39:38,502:INFO:Label encoded categorical column: Partner
-2025-07-23 01:39:38,506:INFO:Label encoded categorical column: Dependents
-2025-07-23 01:39:38,510:INFO:Label encoded categorical column: PhoneService
-2025-07-23 01:39:38,514:INFO:Label encoded categorical column: MultipleLines
-2025-07-23 01:39:38,518:INFO:Label encoded categorical column: InternetService
-2025-07-23 01:39:38,521:INFO:Label encoded categorical column: OnlineSecurity
-2025-07-23 01:39:38,526:INFO:Label encoded categorical column: OnlineBackup
-2025-07-23 01:39:38,531:INFO:Label encoded categorical column: DeviceProtection
-2025-07-23 01:39:38,535:INFO:Label encoded categorical column: TechSupport
-2025-07-23 01:39:38,540:INFO:Label encoded categorical column: StreamingTV
-2025-07-23 01:39:38,544:INFO:Label encoded categorical column: StreamingMovies
-2025-07-23 01:39:38,549:INFO:Label encoded categorical column: Contract
-2025-07-23 01:39:38,553:INFO:Label encoded categorical column: PaperlessBilling
-2025-07-23 01:39:38,557:INFO:Label encoded categorical column: PaymentMethod
-2025-07-23 01:39:38,617:INFO:Label encoded categorical column: TotalCharges
-2025-07-23 01:39:38,679:INFO:Label encoded target column
-2025-07-23 01:39:40,876:INFO:Saved feature scores to results/metrics/feature_scores.csv
-2025-07-23 01:39:40,877:INFO:Top 20 selected features: ['Contract', 'tenure', 'OnlineSecurity', 'TechSupport', 'OnlineBackup', 'InternetService', 'DeviceProtection', 'MonthlyCharges', 'PaymentMethod', 'StreamingMovies', 'StreamingTV', 'TotalCharges', 'PaperlessBilling', 'Dependents', 'Partner', 'MultipleLines', 'PhoneService', 'gender']
-2025-07-23 01:39:41,707:INFO:Saved cleaned data to data/cleaned_data.csv
-2025-07-23 01:39:41,724:INFO:Completed preprocessing pipeline
-2025-07-23 01:39:41,727:INFO:Training models...
-2025-07-23 01:39:41,729:INFO:Training xgboost...
-2025-07-23 01:39:43,126:INFO:xgboost trained.
-2025-07-23 01:39:43,127:INFO:Training logistic_regression...
-2025-07-23 01:39:43,209:INFO:logistic_regression trained.
-2025-07-23 01:39:43,209:INFO:Training decision_tree...
-2025-07-23 01:39:43,342:INFO:decision_tree trained.
-2025-07-23 01:39:43,346:INFO:Evaluating xgboost
-2025-07-23 01:39:45,396:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_confusion_matrix.png
-2025-07-23 01:39:45,419:INFO:Evaluating logistic_regression
-2025-07-23 01:39:45,965:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_confusion_matrix.png
-2025-07-23 01:39:45,974:INFO:Evaluating decision_tree
-2025-07-23 01:39:46,508:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_confusion_matrix.png
-2025-07-23 01:39:46,521:INFO:Pipeline execution completed
+2025-07-23 14:36:28,094:INFO:Logging initialized.
+2025-07-23 14:36:28,665:INFO:Starting churn prediction pipeline
+2025-07-23 14:36:28,741:INFO:Starting preprocessing pipeline
+2025-07-23 14:36:28,777:INFO:Loaded data with shape (7043, 21)
+2025-07-23 14:36:28,801:INFO:Dropped 'customerID' column
+2025-07-23 14:36:28,823:INFO:Capped outliers in 'SeniorCitizen': 1142 values adjusted
+2025-07-23 14:36:28,827:INFO:Capped outliers in 'tenure': 0 values adjusted
+2025-07-23 14:36:28,831:INFO:Capped outliers in 'MonthlyCharges': 0 values adjusted
+2025-07-23 14:36:28,836:INFO:Label encoded categorical column: gender
+2025-07-23 14:36:28,839:INFO:Label encoded categorical column: Partner
+2025-07-23 14:36:28,841:INFO:Label encoded categorical column: Dependents
+2025-07-23 14:36:28,843:INFO:Label encoded categorical column: PhoneService
+2025-07-23 14:36:28,845:INFO:Label encoded categorical column: MultipleLines
+2025-07-23 14:36:28,848:INFO:Label encoded categorical column: InternetService
+2025-07-23 14:36:28,851:INFO:Label encoded categorical column: OnlineSecurity
+2025-07-23 14:36:28,856:INFO:Label encoded categorical column: OnlineBackup
+2025-07-23 14:36:28,860:INFO:Label encoded categorical column: DeviceProtection
+2025-07-23 14:36:28,866:INFO:Label encoded categorical column: TechSupport
+2025-07-23 14:36:28,870:INFO:Label encoded categorical column: StreamingTV
+2025-07-23 14:36:28,872:INFO:Label encoded categorical column: StreamingMovies
+2025-07-23 14:36:28,875:INFO:Label encoded categorical column: Contract
+2025-07-23 14:36:28,877:INFO:Label encoded categorical column: PaperlessBilling
+2025-07-23 14:36:28,881:INFO:Label encoded categorical column: PaymentMethod
+2025-07-23 14:36:28,912:INFO:Label encoded categorical column: TotalCharges
+2025-07-23 14:36:28,916:INFO:Label encoded target column
+2025-07-23 14:36:29,906:INFO:Saved feature scores to results/metrics/feature_scores.csv
+2025-07-23 14:36:29,906:INFO:Top 20 selected features: ['Contract', 'tenure', 'OnlineSecurity', 'TechSupport', 'OnlineBackup', 'InternetService', 'DeviceProtection', 'MonthlyCharges', 'PaymentMethod', 'StreamingMovies', 'StreamingTV', 'TotalCharges', 'PaperlessBilling', 'Dependents', 'Partner', 'MultipleLines', 'PhoneService', 'gender']
+2025-07-23 14:36:30,111:INFO:Saved cleaned data to data/cleaned_data.csv
+2025-07-23 14:36:30,119:INFO:Completed preprocessing pipeline
+2025-07-23 14:36:30,120:INFO:Training models...
+2025-07-23 14:36:30,121:INFO:Training xgboost...
+2025-07-23 14:36:30,717:INFO:xgboost trained.
+2025-07-23 14:36:30,717:INFO:Training logistic_regression...
+2025-07-23 14:36:30,851:INFO:logistic_regression trained.
+2025-07-23 14:36:30,852:INFO:Training decision_tree...
+2025-07-23 14:36:30,898:INFO:decision_tree trained.
+2025-07-23 14:36:30,899:INFO:Evaluating xgboost
+2025-07-23 14:36:33,541:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_confusion_matrix.png
+2025-07-23 14:36:33,554:INFO:Evaluating logistic_regression
+2025-07-23 14:36:33,754:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_confusion_matrix.png
+2025-07-23 14:36:33,758:INFO:Evaluating decision_tree
+2025-07-23 14:36:33,936:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_confusion_matrix.png
+2025-07-23 14:36:33,945:INFO:Pipeline execution completed
