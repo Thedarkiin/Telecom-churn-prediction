@@ -6,6 +6,7 @@
 
 A modular machine learning pipeline for predicting customer churn using the Kaggle Telco dataset (~7 000 customers, 21 columns).  
 The aim is to identify which subscribers are likely to leave and highlight the key factors behind their decisions.
+A quick cool fact, telecom companies save up to 7 times more when keeping a subscribed customer rather than acquiring a new one.
 
 > A business problem tackled through a clean ML structure.
 
@@ -60,7 +61,7 @@ churn/
 | Decision Tree      | 0.7260   | 0.4853    | 0.5294 | 0.5064   | 0.6633  |
 
 > Logistic Regression is the best all-rounder, but XGBoost performs better in catching potential churners (recall).
-> In other words Xgboost catches 3 out of 4 actual churners
+> In other words Xgboost catches 3 out of 4 actual churners.
 
 ---
 
@@ -79,7 +80,7 @@ churn/
 | 9    | PaymentMethod    | 0.0447      |
 | 10   | StreamingMovies  | 0.0418      |
 
-> Here as you can see the most relevant features, or i'd say the features correlated the most to churning
+> Here as you can see the most relevant features, or i'd say the features correlated the most to churning.
 
 ---
 
@@ -91,6 +92,8 @@ This pipeline helps spot high-risk subscribers early and empowers the team to ta
 ---
 
 ## 🛠 How to Run
+
+>If you have anaconda do like me, i created a conda environnement so that i can install only the dependacies i want, aka needed for this specifc project.
 
 ```bash
 git clone https://github.com/Thedarkiin/telecom-project.git
