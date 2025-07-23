@@ -60,6 +60,7 @@ churn/
 | Decision Tree      | 0.7260   | 0.4853    | 0.5294 | 0.5064   | 0.6633  |
 
 > Logistic Regression is the best all-rounder, but XGBoost performs better in catching potential churners (recall).
+> In other words Xgboost catches 3 out of 4 actual churners
 
 ---
 
@@ -77,6 +78,8 @@ churn/
 | 8    | MonthlyCharges   | 0.0459      |
 | 9    | PaymentMethod    | 0.0447      |
 | 10   | StreamingMovies  | 0.0418      |
+
+> Here as you can see the most relevant features, or i'd say the features correlated the most to churning
 
 ---
 
