@@ -1,4 +1,4 @@
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/downloads/release/python-380/)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/downloads/release/python/)
 
 # Telecom Churn Prediction Pipeline
 
@@ -90,7 +90,7 @@ This pipeline helps spot high-risk subscribers early and empowers the team to ta
 ## 🛠 How to Run
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/churn.git
+git clone https://github.com/Thedarkiin/telecom-project.git
 cd churn
 pip install -r requirements.txt
 python pipeline.py
@@ -100,7 +100,7 @@ python pipeline.py
 
 - `results/metrics/all_metrics.csv`
 - `results/metrics/feature_scores.csv`
-- `results/plots/xgboost_confusion_matrix.png`, etc.
+- `results/metrics/xgboost_confusion_matrix.png`, etc.
 
 ---
 
@@ -112,20 +112,16 @@ python pipeline.py
 
 ### 🔹 Confusion Matrix – XGBoost
 
-![XGBoost Confusion Matrix](results/plots/xgboost_confusion_matrix.png)
+![XGBoost Confusion Matrix](results/metrics/xgboost_confusion_matrix.png)
 
-### 🔹 Confusion Matrix – Logistic Regression
-
-![Logistic Confusion Matrix](results/plots/logistic_regression_confusion_matrix.png)
 
 ---
 
-## 🚧 Next Steps
+## 🚧 Next Steps (hopefully)
 
-- Add SHAP explainability  
-- Wrap the model into an API (e.g. FastAPI)  
-- Run the pipeline in a Docker container  
-- Schedule automatic runs via cron or Airflow  
+- Add SHAP explainability (a method that's based on game theory, and can enhance the model further. Also, it explains why such predictions occured.)  
+- turn the project ""model into an API service (if you happen to clone or fork the project so that you can modify it on your own,make sure to save the model using joblib ask an llm for further infos abt this )
+- Run the pipeline in a Docker container 
 
 ---
 
@@ -138,6 +134,6 @@ Contributions are welcome! Please open an issue or pull request to suggest impro
 ## 📎 About
 
 Created by [Yassin Asermouh](https://www.linkedin.com/in/yassin-asermouh-984aa8249/).  
-Built for learning, experimentation, and going beyond basic notebooks.
+Built for learning, experimentation, and going beyond basic jupy notebooks.
 
 **Data**: [Kaggle - Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
