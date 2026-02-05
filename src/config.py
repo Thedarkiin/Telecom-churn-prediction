@@ -87,9 +87,10 @@ class Config:
 
         # 8. THRESHOLD OPTIMIZATION
         "threshold": {
-            "optimize": True,
-            "metric": "recall",  # Will also compute F1-optimized thresholds
-            "search_range": [0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65]
+            "optimize": False,  # Use fixed 0.5 threshold for standard comparison
+            "metric": "f1",
+            "default_threshold": 0.5,  # Standard threshold
+            "search_range": [0.5]  # Fixed at 0.5
         },
 
         # 9. MONTE CARLO SIMULATION

@@ -566,3 +566,315 @@ Results saved to:
 ------------------------------------------------------------
 2026-02-05 02:23:14,761:INFO:FINAL MODEL COMPARISON
 2026-02-05 02:23:14,761:INFO:------------------------------------------------------------
+2026-02-05 02:31:55,613:INFO:Logging initialized.
+2026-02-05 02:31:55,689:INFO:============================================================
+2026-02-05 02:31:55,689:INFO:Starting Enhanced Churn Prediction Pipeline
+2026-02-05 02:31:55,689:INFO:============================================================
+2026-02-05 02:31:55,694:INFO:
+[STEP 1] PREPROCESSING
+2026-02-05 02:31:55,694:INFO:----------------------------------------
+2026-02-05 02:31:55,694:INFO:Starting preprocessing pipeline
+2026-02-05 02:31:55,711:INFO:Loaded data with shape (7043, 21)
+2026-02-05 02:31:55,713:INFO:Dropped column: customerID
+2026-02-05 02:31:55,717:INFO:Applied deterministic imputation: TotalCharges=0 where tenure == 0
+2026-02-05 02:31:55,718:INFO:Binary encoded: gender
+2026-02-05 02:31:55,719:INFO:Binary encoded: Partner
+2026-02-05 02:31:55,720:INFO:Binary encoded: Dependents
+2026-02-05 02:31:55,721:INFO:Binary encoded: PhoneService
+2026-02-05 02:31:55,721:INFO:Binary encoded: PaperlessBilling
+2026-02-05 02:31:55,722:INFO:Binary encoded: Churn
+2026-02-05 02:31:55,723:INFO:Service binary encoded: MultipleLines
+2026-02-05 02:31:55,724:INFO:Service binary encoded: OnlineSecurity
+2026-02-05 02:31:55,725:INFO:Service binary encoded: OnlineBackup
+2026-02-05 02:31:55,725:INFO:Service binary encoded: DeviceProtection
+2026-02-05 02:31:55,726:INFO:Service binary encoded: TechSupport
+2026-02-05 02:31:55,727:INFO:Service binary encoded: StreamingTV
+2026-02-05 02:31:55,727:INFO:Service binary encoded: StreamingMovies
+2026-02-05 02:31:55,733:INFO:One-hot encoded: ['InternetService', 'Contract', 'PaymentMethod']
+2026-02-05 02:31:55,736:INFO:Applied log1p to TotalCharges
+2026-02-05 02:31:55,736:INFO:Applied log1p to MonthlyCharges
+2026-02-05 02:31:55,739:INFO:Normalized columns: ['tenure', 'TotalCharges', 'MonthlyCharges', 'SeniorCitizen']
+2026-02-05 02:31:55,790:INFO:Saved cleaned data to data/cleaned_data.csv
+2026-02-05 02:31:55,794:INFO:Train set: 5634, Test set: 1409
+2026-02-05 02:31:55,795:INFO:Train churn rate: 26.54%, Test churn rate: 26.54%
+2026-02-05 02:31:55,795:INFO:Completed preprocessing pipeline
+2026-02-05 02:31:55,795:INFO:Features: 23
+2026-02-05 02:31:55,795:INFO:Training samples: 5634, Test samples: 1409
+2026-02-05 02:31:55,795:INFO:
+[STEP 2] ODDS RATIO & LINEARITY VALIDATION
+2026-02-05 02:31:55,795:INFO:----------------------------------------
+2026-02-05 02:31:55,869:INFO:Saved univariate odds ratios
+2026-02-05 02:31:55,888:INFO:Linearity assumption validated for all continuous features
+2026-02-05 02:31:55,888:INFO:
+[STEP 3] MODEL TRAINING
+2026-02-05 02:31:55,888:INFO:----------------------------------------
+2026-02-05 02:31:55,888:INFO:Training models...
+2026-02-05 02:31:55,888:INFO:Training Logistic Regression with Optuna optimization...
+2026-02-05 02:32:16,220:INFO:Best trial: {'C': 0.3732466815166928, 'l1_ratio': 0.9809383188236428}
+2026-02-05 02:32:16,220:INFO:Best CV recall: 0.8060
+2026-02-05 02:32:16,305:INFO:Saved Optuna study to optuna_study.csv
+2026-02-05 02:32:16,305:INFO:Training xgboost...
+2026-02-05 02:32:16,534:INFO:xgboost trained.
+2026-02-05 02:32:16,534:INFO:Training decision_tree...
+2026-02-05 02:32:16,567:INFO:decision_tree trained.
+2026-02-05 02:32:16,567:INFO:Finding optimal thresholds for recall and F1...
+2026-02-05 02:32:16,567:INFO:logistic_regression - Optimizing for recall:
+2026-02-05 02:32:16,570:INFO:Optimal threshold: 0.500 (recall=0.7763)
+2026-02-05 02:32:16,570:INFO:logistic_regression - Optimizing for F1:
+2026-02-05 02:32:16,572:INFO:Optimal threshold: 0.500 (f1=0.5933)
+2026-02-05 02:32:16,572:INFO:xgboost - Optimizing for recall:
+2026-02-05 02:32:16,578:INFO:Optimal threshold: 0.500 (recall=0.9051)
+2026-02-05 02:32:16,578:INFO:xgboost - Optimizing for F1:
+2026-02-05 02:32:16,583:INFO:Optimal threshold: 0.500 (f1=0.7206)
+2026-02-05 02:32:16,584:INFO:decision_tree - Optimizing for recall:
+2026-02-05 02:32:16,586:INFO:Optimal threshold: 0.500 (recall=1.0000)
+2026-02-05 02:32:16,586:INFO:decision_tree - Optimizing for F1:
+2026-02-05 02:32:16,588:INFO:Optimal threshold: 0.500 (f1=0.9933)
+2026-02-05 02:32:16,588:INFO:Creating Monte Carlo Logistic Regression for uncertainty...
+2026-02-05 02:32:21,793:INFO:All models trained successfully.
+2026-02-05 02:32:21,794:INFO:Optimal thresholds (Recall-optimized):
+2026-02-05 02:32:21,794:INFO:  logistic_regression: 0.500
+2026-02-05 02:32:21,794:INFO:  xgboost: 0.500
+2026-02-05 02:32:21,794:INFO:  decision_tree: 0.500
+2026-02-05 02:32:21,794:INFO:  monte_carlo_lr: 0.500
+2026-02-05 02:32:21,794:INFO:Optimal thresholds (F1-optimized):
+2026-02-05 02:32:21,794:INFO:  logistic_regression: 0.500
+2026-02-05 02:32:21,794:INFO:  xgboost: 0.500
+2026-02-05 02:32:21,794:INFO:  decision_tree: 0.500
+2026-02-05 02:32:21,794:INFO:
+[STEP 4a] MODEL EVALUATION (Recall-optimized thresholds)
+2026-02-05 02:32:21,794:INFO:----------------------------------------
+2026-02-05 02:32:21,794:INFO:Evaluating logistic_regression
+2026-02-05 02:32:22,084:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_confusion_matrix.png
+2026-02-05 02:32:22,250:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_roc_curve.png
+2026-02-05 02:32:22,398:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_pr_curve.png
+2026-02-05 02:32:22,402:INFO:  logistic_regression Results (threshold=0.50):
+2026-02-05 02:32:22,402:INFO:    Accuracy:  0.7388
+2026-02-05 02:32:22,402:INFO:    Precision: 0.5051
+2026-02-05 02:32:22,402:INFO:    Recall:    0.7968
+2026-02-05 02:32:22,402:INFO:    F1:        0.6183
+2026-02-05 02:32:22,402:INFO:    ROC-AUC:   0.8480
+2026-02-05 02:32:22,402:INFO:Evaluating xgboost
+2026-02-05 02:32:22,598:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_confusion_matrix.png
+2026-02-05 02:32:22,776:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_roc_curve.png
+2026-02-05 02:32:22,934:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_pr_curve.png
+2026-02-05 02:32:22,942:INFO:  xgboost Results (threshold=0.50):
+2026-02-05 02:32:22,942:INFO:    Accuracy:  0.7530
+2026-02-05 02:32:22,942:INFO:    Precision: 0.5241
+2026-02-05 02:32:22,942:INFO:    Recall:    0.7567
+2026-02-05 02:32:22,942:INFO:    F1:        0.6193
+2026-02-05 02:32:22,942:INFO:    ROC-AUC:   0.8376
+2026-02-05 02:32:22,945:INFO:Evaluating decision_tree
+2026-02-05 02:32:23,139:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_confusion_matrix.png
+2026-02-05 02:32:23,285:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_roc_curve.png
+2026-02-05 02:32:23,417:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_pr_curve.png
+2026-02-05 02:32:23,422:INFO:  decision_tree Results (threshold=0.50):
+2026-02-05 02:32:23,422:INFO:    Accuracy:  0.7374
+2026-02-05 02:32:23,422:INFO:    Precision: 0.5054
+2026-02-05 02:32:23,422:INFO:    Recall:    0.5027
+2026-02-05 02:32:23,422:INFO:    F1:        0.5040
+2026-02-05 02:32:23,422:INFO:    ROC-AUC:   0.6629
+2026-02-05 02:32:23,422:INFO:Evaluating monte_carlo_lr
+2026-02-05 02:32:23,703:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/monte_carlo_lr_uncertainty.png
+2026-02-05 02:32:23,705:INFO:  monte_carlo_lr Results (threshold=0.50):
+2026-02-05 02:32:23,705:INFO:    Accuracy:  0.7402
+2026-02-05 02:32:23,705:INFO:    Precision: 0.5068
+2026-02-05 02:32:23,705:INFO:    Recall:    0.7968
+2026-02-05 02:32:23,706:INFO:    F1:        0.6195
+2026-02-05 02:32:23,706:INFO:    ROC-AUC:   0.8482
+2026-02-05 02:32:23,710:INFO:Saved all metrics to all_metrics.csv
+2026-02-05 02:32:23,711:INFO:
+[STEP 4b] MODEL EVALUATION (F1-optimized thresholds)
+2026-02-05 02:32:23,711:INFO:----------------------------------------
+2026-02-05 02:32:23,711:INFO:Evaluating logistic_regression
+2026-02-05 02:32:23,867:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_confusion_matrix.png
+2026-02-05 02:32:24,016:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_roc_curve.png
+2026-02-05 02:32:24,157:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/logistic_regression_pr_curve.png
+2026-02-05 02:32:24,161:INFO:  logistic_regression Results (threshold=0.50):
+2026-02-05 02:32:24,161:INFO:    Accuracy:  0.7388
+2026-02-05 02:32:24,161:INFO:    Precision: 0.5051
+2026-02-05 02:32:24,161:INFO:    Recall:    0.7968
+2026-02-05 02:32:24,162:INFO:    F1:        0.6183
+2026-02-05 02:32:24,162:INFO:    ROC-AUC:   0.8480
+2026-02-05 02:32:24,162:INFO:Evaluating xgboost
+2026-02-05 02:32:24,349:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_confusion_matrix.png
+2026-02-05 02:32:24,523:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_roc_curve.png
+2026-02-05 02:32:24,703:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/xgboost_pr_curve.png
+2026-02-05 02:32:24,711:INFO:  xgboost Results (threshold=0.50):
+2026-02-05 02:32:24,711:INFO:    Accuracy:  0.7530
+2026-02-05 02:32:24,711:INFO:    Precision: 0.5241
+2026-02-05 02:32:24,711:INFO:    Recall:    0.7567
+2026-02-05 02:32:24,711:INFO:    F1:        0.6193
+2026-02-05 02:32:24,711:INFO:    ROC-AUC:   0.8376
+2026-02-05 02:32:24,713:INFO:Evaluating decision_tree
+2026-02-05 02:32:24,896:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_confusion_matrix.png
+2026-02-05 02:32:25,031:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_roc_curve.png
+2026-02-05 02:32:25,163:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/decision_tree_pr_curve.png
+2026-02-05 02:32:25,166:INFO:  decision_tree Results (threshold=0.50):
+2026-02-05 02:32:25,166:INFO:    Accuracy:  0.7374
+2026-02-05 02:32:25,166:INFO:    Precision: 0.5054
+2026-02-05 02:32:25,166:INFO:    Recall:    0.5027
+2026-02-05 02:32:25,166:INFO:    F1:        0.5040
+2026-02-05 02:32:25,166:INFO:    ROC-AUC:   0.6629
+2026-02-05 02:32:25,166:INFO:Evaluating monte_carlo_lr
+2026-02-05 02:32:25,470:INFO:Plot saved to C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/monte_carlo_lr_uncertainty.png
+2026-02-05 02:32:25,472:INFO:  monte_carlo_lr Results (threshold=0.50):
+2026-02-05 02:32:25,473:INFO:    Accuracy:  0.7402
+2026-02-05 02:32:25,473:INFO:    Precision: 0.5068
+2026-02-05 02:32:25,473:INFO:    Recall:    0.7968
+2026-02-05 02:32:25,473:INFO:    F1:        0.6195
+2026-02-05 02:32:25,473:INFO:    ROC-AUC:   0.8482
+2026-02-05 02:32:25,474:INFO:Saved all metrics to all_metrics.csv
+2026-02-05 02:32:25,476:INFO:
+Best model (recall-optimized): logistic_regression (recall=0.7968, precision=0.5051)
+2026-02-05 02:32:25,477:INFO:Best model (F1-optimized): monte_carlo_lr (f1=0.6195, precision=0.5068, recall=0.7968)
+2026-02-05 02:32:25,477:INFO:
+[STEP 5] MULTIVARIATE ODDS RATIOS
+2026-02-05 02:32:25,477:INFO:----------------------------------------
+2026-02-05 02:32:25,479:INFO:Top 10 risk factors:
+2026-02-05 02:32:25,479:INFO:  InternetService_Fiber optic: OR=2.938 (risk)
+2026-02-05 02:32:25,479:INFO:  StreamingMovies: OR=1.480 (risk)
+2026-02-05 02:32:25,479:INFO:  PaymentMethod_Electronic check: OR=1.449 (risk)
+2026-02-05 02:32:25,479:INFO:  StreamingTV: OR=1.433 (risk)
+2026-02-05 02:32:25,479:INFO:  MultipleLines: OR=1.407 (risk)
+2026-02-05 02:32:25,479:INFO:  PaperlessBilling: OR=1.404 (risk)
+2026-02-05 02:32:25,479:INFO:  SeniorCitizen: OR=1.060 (risk)
+2026-02-05 02:32:25,480:INFO:  DeviceProtection: OR=1.028 (risk)
+2026-02-05 02:32:25,480:INFO:  Partner: OR=1.025 (risk)
+2026-02-05 02:32:25,480:INFO:  gender: OR=1.017 (risk)
+2026-02-05 02:32:25,480:INFO:
+[STEP 6] DOUBLE ML CAUSAL ANALYSIS
+2026-02-05 02:32:25,480:INFO:----------------------------------------
+2026-02-05 02:32:25,480:WARNING:Treatment column 'Month-to-month' not found. Using first column as treatment.
+2026-02-05 02:32:25,481:INFO:Running Double ML with treatment: gender
+2026-02-05 02:32:25,481:INFO:Control variables: 22
+2026-02-05 02:32:30,420:INFO:ATE estimate: 0.0014
+2026-02-05 02:32:30,421:INFO:95% CI: [-0.0362, 0.0390]
+2026-02-05 02:32:30,423:INFO:Saved Double ML causal analysis
+2026-02-05 02:32:30,423:INFO:ATE: 0.0014, CI: [-0.0362, 0.0390]
+2026-02-05 02:32:30,423:INFO:
+[STEP 7] EXPLAINABILITY ANALYSIS
+2026-02-05 02:32:30,423:INFO:----------------------------------------
+2026-02-05 02:32:30,423:INFO:Running SHAP analysis...
+2026-02-05 02:32:30,684:INFO:Computing SHAP values...
+2026-02-05 02:32:30,941:INFO:Saved SHAP bar summary plot
+2026-02-05 02:32:31,415:INFO:Saved SHAP beeswarm plot
+2026-02-05 02:32:31,419:INFO:Saved SHAP importance to CSV
+2026-02-05 02:32:31,690:INFO:Saved feature importance comparison
+2026-02-05 02:32:31,690:INFO:Running LIME analysis...
+2026-02-05 02:32:31,713:INFO:Generating LIME explanation for sample 1/100
+2026-02-05 02:32:31,769:INFO:Generating LIME explanation for sample 2/100
+2026-02-05 02:32:31,824:INFO:Generating LIME explanation for sample 3/100
+2026-02-05 02:32:31,876:INFO:Generating LIME explanation for sample 4/100
+2026-02-05 02:32:31,931:INFO:Generating LIME explanation for sample 5/100
+2026-02-05 02:32:31,985:INFO:Generating LIME explanation for sample 6/100
+2026-02-05 02:32:32,045:INFO:Generating LIME explanation for sample 7/100
+2026-02-05 02:32:32,100:INFO:Generating LIME explanation for sample 8/100
+2026-02-05 02:32:32,154:INFO:Generating LIME explanation for sample 9/100
+2026-02-05 02:32:32,211:INFO:Generating LIME explanation for sample 10/100
+2026-02-05 02:32:32,264:INFO:Generating LIME explanation for sample 11/100
+2026-02-05 02:32:32,317:INFO:Generating LIME explanation for sample 12/100
+2026-02-05 02:32:32,374:INFO:Generating LIME explanation for sample 13/100
+2026-02-05 02:32:32,426:INFO:Generating LIME explanation for sample 14/100
+2026-02-05 02:32:32,478:INFO:Generating LIME explanation for sample 15/100
+2026-02-05 02:32:32,530:INFO:Generating LIME explanation for sample 16/100
+2026-02-05 02:32:32,588:INFO:Generating LIME explanation for sample 17/100
+2026-02-05 02:32:32,644:INFO:Generating LIME explanation for sample 18/100
+2026-02-05 02:32:32,701:INFO:Generating LIME explanation for sample 19/100
+2026-02-05 02:32:32,757:INFO:Generating LIME explanation for sample 20/100
+2026-02-05 02:32:32,812:INFO:Generating LIME explanation for sample 21/100
+2026-02-05 02:32:32,867:INFO:Generating LIME explanation for sample 22/100
+2026-02-05 02:32:32,921:INFO:Generating LIME explanation for sample 23/100
+2026-02-05 02:32:32,977:INFO:Generating LIME explanation for sample 24/100
+2026-02-05 02:32:33,031:INFO:Generating LIME explanation for sample 25/100
+2026-02-05 02:32:33,086:INFO:Generating LIME explanation for sample 26/100
+2026-02-05 02:32:33,141:INFO:Generating LIME explanation for sample 27/100
+2026-02-05 02:32:33,195:INFO:Generating LIME explanation for sample 28/100
+2026-02-05 02:32:33,250:INFO:Generating LIME explanation for sample 29/100
+2026-02-05 02:32:33,304:INFO:Generating LIME explanation for sample 30/100
+2026-02-05 02:32:33,357:INFO:Generating LIME explanation for sample 31/100
+2026-02-05 02:32:33,415:INFO:Generating LIME explanation for sample 32/100
+2026-02-05 02:32:33,467:INFO:Generating LIME explanation for sample 33/100
+2026-02-05 02:32:33,520:INFO:Generating LIME explanation for sample 34/100
+2026-02-05 02:32:33,576:INFO:Generating LIME explanation for sample 35/100
+2026-02-05 02:32:33,632:INFO:Generating LIME explanation for sample 36/100
+2026-02-05 02:32:33,689:INFO:Generating LIME explanation for sample 37/100
+2026-02-05 02:32:33,746:INFO:Generating LIME explanation for sample 38/100
+2026-02-05 02:32:33,801:INFO:Generating LIME explanation for sample 39/100
+2026-02-05 02:32:33,858:INFO:Generating LIME explanation for sample 40/100
+2026-02-05 02:32:33,912:INFO:Generating LIME explanation for sample 41/100
+2026-02-05 02:32:33,966:INFO:Generating LIME explanation for sample 42/100
+2026-02-05 02:32:34,021:INFO:Generating LIME explanation for sample 43/100
+2026-02-05 02:32:34,076:INFO:Generating LIME explanation for sample 44/100
+2026-02-05 02:32:34,131:INFO:Generating LIME explanation for sample 45/100
+2026-02-05 02:32:34,188:INFO:Generating LIME explanation for sample 46/100
+2026-02-05 02:32:34,242:INFO:Generating LIME explanation for sample 47/100
+2026-02-05 02:32:34,298:INFO:Generating LIME explanation for sample 48/100
+2026-02-05 02:32:34,352:INFO:Generating LIME explanation for sample 49/100
+2026-02-05 02:32:34,405:INFO:Generating LIME explanation for sample 50/100
+2026-02-05 02:32:34,462:INFO:Generating LIME explanation for sample 51/100
+2026-02-05 02:32:34,515:INFO:Generating LIME explanation for sample 52/100
+2026-02-05 02:32:34,568:INFO:Generating LIME explanation for sample 53/100
+2026-02-05 02:32:34,621:INFO:Generating LIME explanation for sample 54/100
+2026-02-05 02:32:34,679:INFO:Generating LIME explanation for sample 55/100
+2026-02-05 02:32:34,739:INFO:Generating LIME explanation for sample 56/100
+2026-02-05 02:32:34,792:INFO:Generating LIME explanation for sample 57/100
+2026-02-05 02:32:34,847:INFO:Generating LIME explanation for sample 58/100
+2026-02-05 02:32:34,901:INFO:Generating LIME explanation for sample 59/100
+2026-02-05 02:32:34,958:INFO:Generating LIME explanation for sample 60/100
+2026-02-05 02:32:35,013:INFO:Generating LIME explanation for sample 61/100
+2026-02-05 02:32:35,068:INFO:Generating LIME explanation for sample 62/100
+2026-02-05 02:32:35,123:INFO:Generating LIME explanation for sample 63/100
+2026-02-05 02:32:35,178:INFO:Generating LIME explanation for sample 64/100
+2026-02-05 02:32:35,234:INFO:Generating LIME explanation for sample 65/100
+2026-02-05 02:32:35,288:INFO:Generating LIME explanation for sample 66/100
+2026-02-05 02:32:35,340:INFO:Generating LIME explanation for sample 67/100
+2026-02-05 02:32:35,396:INFO:Generating LIME explanation for sample 68/100
+2026-02-05 02:32:35,448:INFO:Generating LIME explanation for sample 69/100
+2026-02-05 02:32:35,504:INFO:Generating LIME explanation for sample 70/100
+2026-02-05 02:32:35,557:INFO:Generating LIME explanation for sample 71/100
+2026-02-05 02:32:35,613:INFO:Generating LIME explanation for sample 72/100
+2026-02-05 02:32:35,665:INFO:Generating LIME explanation for sample 73/100
+2026-02-05 02:32:35,721:INFO:Generating LIME explanation for sample 74/100
+2026-02-05 02:32:35,782:INFO:Generating LIME explanation for sample 75/100
+2026-02-05 02:32:35,836:INFO:Generating LIME explanation for sample 76/100
+2026-02-05 02:32:35,889:INFO:Generating LIME explanation for sample 77/100
+2026-02-05 02:32:35,945:INFO:Generating LIME explanation for sample 78/100
+2026-02-05 02:32:36,000:INFO:Generating LIME explanation for sample 79/100
+2026-02-05 02:32:36,073:INFO:Generating LIME explanation for sample 80/100
+2026-02-05 02:32:36,130:INFO:Generating LIME explanation for sample 81/100
+2026-02-05 02:32:36,186:INFO:Generating LIME explanation for sample 82/100
+2026-02-05 02:32:36,240:INFO:Generating LIME explanation for sample 83/100
+2026-02-05 02:32:36,300:INFO:Generating LIME explanation for sample 84/100
+2026-02-05 02:32:36,354:INFO:Generating LIME explanation for sample 85/100
+2026-02-05 02:32:36,408:INFO:Generating LIME explanation for sample 86/100
+2026-02-05 02:32:36,463:INFO:Generating LIME explanation for sample 87/100
+2026-02-05 02:32:36,518:INFO:Generating LIME explanation for sample 88/100
+2026-02-05 02:32:36,575:INFO:Generating LIME explanation for sample 89/100
+2026-02-05 02:32:36,628:INFO:Generating LIME explanation for sample 90/100
+2026-02-05 02:32:36,682:INFO:Generating LIME explanation for sample 91/100
+2026-02-05 02:32:36,736:INFO:Generating LIME explanation for sample 92/100
+2026-02-05 02:32:36,796:INFO:Generating LIME explanation for sample 93/100
+2026-02-05 02:32:36,848:INFO:Generating LIME explanation for sample 94/100
+2026-02-05 02:32:36,903:INFO:Generating LIME explanation for sample 95/100
+2026-02-05 02:32:36,958:INFO:Generating LIME explanation for sample 96/100
+2026-02-05 02:32:37,014:INFO:Generating LIME explanation for sample 97/100
+2026-02-05 02:32:37,112:INFO:Generating LIME explanation for sample 98/100
+2026-02-05 02:32:37,171:INFO:Generating LIME explanation for sample 99/100
+2026-02-05 02:32:37,224:INFO:Generating LIME explanation for sample 100/100
+2026-02-05 02:32:37,278:INFO:Saved 100 LIME explanations
+2026-02-05 02:32:37,279:INFO:Saved SHAP and LIME explanations
+2026-02-05 02:32:37,279:INFO:
+============================================================
+2026-02-05 02:32:37,279:INFO:PIPELINE COMPLETE
+2026-02-05 02:32:37,279:INFO:============================================================
+2026-02-05 02:32:37,279:INFO:
+Results saved to:
+2026-02-05 02:32:37,279:INFO:  Metrics:        C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/metrics/
+2026-02-05 02:32:37,279:INFO:  Predictions:    C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/predictions/
+2026-02-05 02:32:37,279:INFO:  Explainability: C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/explainability/
+2026-02-05 02:32:37,279:INFO:  Causal:         C:\Users\aserm\OneDrive\Bureau\projects\churn\src\../results/causal/
+2026-02-05 02:32:37,279:INFO:
+------------------------------------------------------------
+2026-02-05 02:32:37,279:INFO:FINAL MODEL COMPARISON
+2026-02-05 02:32:37,279:INFO:------------------------------------------------------------
