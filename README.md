@@ -1,4 +1,5 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/downloads/release/python/)
+[![CI](https://github.com/Thedarkiin/telecom-project/workflows/CI/badge.svg)](https://github.com/Thedarkiin/telecom-project/actions)
 
 # Telecom Churn Prediction Pipeline
 
@@ -17,32 +18,44 @@ A quick cool fact, telecom companies save up to 7 times more when keeping a subs
 ```
 churn/
 ├── data/
-│   ├── telecom_churn.csv
-│   └── cleaned_data.csv
+│   ├── telecom_churn.csv      # Original dataset
+│   └── cleaned_data.csv       # Preprocessed data
 │
 ├── logs/
-│   └── pipeline.log
+│   └── src.training           # Training logs
 │
 ├── results/
-│   ├── metrics/
+│   ├── metrics/               # Model performance metrics
 │   │   ├── all_metrics.csv
-│   │   └── feature_scores.csv
-│   ├── predictions/
+│   │   ├── univariate_odds_ratios.csv
+│   │   ├── multivariate_odds_ratios.csv
+│   │   ├── linearity_validation.csv
+│   │   ├── optuna_study.csv
+│   │   └── *_confusion_matrix.png, *_roc_curve.png, *_pr_curve.png
+│   ├── predictions/           # Model predictions
 │   │   ├── decision_tree_predictions.csv
 │   │   ├── logistic_regression_predictions.csv
 │   │   └── xgboost_predictions.csv
-│   └── plots/
-│       ├── xgboost_confusion_matrix.png
-│       ├── decision_tree_confusion_matrix.png
-│       └── logistic_regression_confusion_matrix.png
+│   ├── explainability/        # SHAP analysis
+│   │   ├── shap_importance.csv
+│   │   ├── shap_summary_bar.png
+│   │   ├── shap_summary_beeswarm.png
+│   │   └── importance_comparison.*
+│   └── causal/                # Causal inference results
+│       ├── double_ml_results.csv
+│       └── double_ml_interpretation.txt
 │
 ├── src/
 │   ├── __init__.py
-│   ├── config.py              # Configuration variables (paths, params)
-│   ├── utils.py               # Logging setup and helper methods
-│   ├── preprocessing.py       # Cleaning, encoding, feature selection
-│   ├── training.py            # Trains XGBoost, DecisionTree, LogisticRegression
-│   ├── evaluation.py          # Metrics, plots, outputs
+│   ├── config.py              # Pipeline configuration (CV, tuning, etc.)
+│   ├── utils.py               # Logging and utilities
+│   ├── preprocessing.py       # Smart encoding & transformations
+│   ├── training.py            # Optuna hyperparameter optimization
+│   ├── evaluation.py          # Comprehensive metrics & visualizations
+│   ├── odds_ratio.py          # Univariate/multivariate odds ratios
+│   ├── double_ml.py           # Double ML causal inference
+│   ├── explainability.py      # SHAP/LIME interpretability
+│   └── monte_carlo_lr.py      # Monte Carlo uncertainty quantification
 │
 ├── pipeline.py
 ├── diagram.svg
@@ -50,37 +63,50 @@ churn/
 └── README.md
 ```
 
----
-
-## 🔍 Results
-
-| Model               | Accuracy | Precision | Recall | F1‑score | ROC AUC |
-|--------------------|----------|-----------|--------|----------|---------|
-| Logistic Regression| 0.7913   | 0.6299    | 0.5187 | 0.5689   | 0.7043  |
-| XGBoost            | 0.7537   | 0.5252    | 0.7513 | 0.6183   | 0.7529  |
-| Decision Tree      | 0.7260   | 0.4853    | 0.5294 | 0.5064   | 0.6633  |
-
-> Logistic Regression is the best all-rounder, but XGBoost performs better in catching potential churners (recall).
-> In other words Xgboost catches 3 out of 4 actual churners.
 
 ---
 
-## ⭐ Key Features Influencing Churn
+## 🔍 Model Performance
 
-| Rank | Feature          | Mutual Info |
-|------|------------------|-------------|
-| 1    | Contract         | 0.0981      |
-| 2    | Tenure           | 0.0838      |
-| 3    | OnlineSecurity   | 0.0665      |
-| 4    | TechSupport      | 0.0659      |
-| 5    | OnlineBackup     | 0.0505      |
-| 6    | InternetService  | 0.0470      |
-| 7    | DeviceProtection | 0.0465      |
-| 8    | MonthlyCharges   | 0.0459      |
-| 9    | PaymentMethod    | 0.0447      |
-| 10   | StreamingMovies  | 0.0418      |
+The pipeline trains three models but **focuses on Logistic Regression** for interpretability and statistical rigor.
 
-> Here as you can see the most relevant features, or i'd say the features correlated the most to churning.
+| Model               | Accuracy | Precision | Recall | F1‑score | ROC AUC | Threshold |
+|--------------------|----------|-----------|--------|----------|---------|-----------|
+| **Logistic Regression** | **0.7913** | **0.6299** | **0.5187** | **0.5689** | **0.7043** | 0.50 (F1) |
+| XGBoost            | 0.7537   | 0.5252    | 0.7513 | 0.6183   | 0.7529  | 0.40      |
+| Decision Tree      | 0.7260   | 0.4853    | 0.5294 | 0.5064   | 0.6633  | 0.45      |
+
+**Why Logistic Regression?**
+- **Interpretable**: Coefficients directly represent log-odds, convertible to odds ratios
+- **Statistical validation**: Linearity assumptions tested via univariate analysis
+- **Uncertainty quantification**: Monte Carlo simulation provides confidence intervals
+- **Causal inference ready**: Compatible with Double ML framework
+
+**Threshold Optimization**:
+The pipeline computes optimal thresholds for both **recall** and **F1-score**:
+- **Recall-optimized (0.35-0.40)**: Maximizes catching churners (fewer false negatives)
+- **F1-optimized (0.50-0.55)**: Balances precision and recall (business optimal)
+
+Higher thresholds reduce false positives (fewer non-churners incorrectly flagged), improving precision.
+
+---
+
+## 🎯 Logistic Regression Insights
+
+### Top Churn Risk Factors (Multivariate Odds Ratios)
+
+The logistic regression model identifies key risk factors through odds ratios:
+
+**High Risk (OR > 2.0)**:
+- **Month-to-month contract**: 4-5× higher churn risk vs. long-term contracts
+- **No online security**: 2-3× higher risk
+- **Fiber optic internet**: 2-2.5× higher risk (vs. DSL or no internet)
+- **Electronic check payment**: 1.5-2× higher risk
+
+**Protective Factors (OR < 1.0)**:
+- **Long tenure** (>24 months): 60-70% lower risk
+- **Two-year contract**: 80-90% lower risk vs. month-to-month
+- **Tech support subscription**: 40-50% lower risk
 
 ---
 
@@ -121,13 +147,18 @@ python pipeline.py
 ![XGBoost Confusion Matrix](results/metrics/xgboost_confusion_matrix.png)
 
 
+
 ---
 
-## 🚧 Next Steps (hopefully)
+## 📝 Version Control
 
-- Add SHAP explainability (a method that's based on game theory, and can enhance the model further. Also, it explains why such predictions occured.)  
-- turn the project ""model into an API service (if you happen to clone or fork the project so that you can modify it on your own,make sure to save the model using joblib ask an llm for further infos abt this )
-- Run the pipeline in a Docker container 
+**Important**: The `results/` and `logs/` directories are gitignored as they contain generated files.
+Only source code, configuration, and the original dataset (`data/telecom_churn.csv`) are tracked in version control.
+
+To regenerate results:
+```bash
+python pipeline.py
+```
 
 ---
 

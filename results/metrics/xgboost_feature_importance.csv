@@ -1,19 +1,24 @@
 Feature,Importance
-f0,0.37722927
-f2,0.107652746
-f5,0.07158903
-f3,0.06384505
-f9,0.04233735
-f1,0.036413446
-f12,0.030617854
-f10,0.028208105
-f16,0.027970055
-f8,0.027734065
-f7,0.027518837
-f4,0.026251772
-f15,0.026013589
-f11,0.023142053
-f17,0.022919264
-f13,0.022195226
-f6,0.020604804
-f14,0.017757496
+Contract_Two year,0.25465676
+InternetService_Fiber optic,0.20319128
+InternetService_No,0.11051878
+Contract_One year,0.090462536
+PaymentMethod_Electronic check,0.036553126
+StreamingMovies,0.0350296
+tenure,0.026425125
+OnlineSecurity,0.021148948
+StreamingTV,0.020104686
+PaperlessBilling,0.019767772
+PhoneService,0.019160662
+TechSupport,0.017948955
+TotalCharges,0.017853975
+MultipleLines,0.015188338
+OnlineBackup,0.014371155
+MonthlyCharges,0.013940109
+SeniorCitizen,0.013773775
+PaymentMethod_Credit card (automatic),0.011995839
+gender,0.011932878
+Dependents,0.011873841
+PaymentMethod_Mailed check,0.011841351
+DeviceProtection,0.011784931
+Partner,0.010475595
