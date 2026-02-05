@@ -46,7 +46,7 @@ class Config:
 
         # 3. TRANSFORMATIONS
         "transformations": {
-            "log1p": ["TotalCharges", "MonthlyCharges"],
+            "log1p": [],  # Disabled - log transform may hurt LR performance
             "normalize": ["tenure", "TotalCharges", "MonthlyCharges", "SeniorCitizen"]
         },
 
@@ -95,9 +95,9 @@ class Config:
 
         # 9. MONTE CARLO SIMULATION
         "monte_carlo": {
-            "n_simulations": 100,
+            "n_simulations": 30,  # Reduced from 100 to avoid memory issues
             "confidence_level": 0.95,
-            "n_jobs": -1
+            "n_jobs": 1  # Disabled parallel to avoid memory issues
         },
 
         # 10. DOUBLE ML (Causal Inference)
@@ -110,7 +110,7 @@ class Config:
         # 11. EXPLAINABILITY
         "explainability": {
             "shap": True,
-            "lime": True,
-            "n_samples_lime": 100
+            "lime": False,  # Disabled - SHAP plots are sufficient
+            "n_samples_lime": 0
         }
     }
