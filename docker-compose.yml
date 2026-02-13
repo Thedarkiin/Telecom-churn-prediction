@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web-app:
+    build: .
+    container_name: churn_flask_app
+    ports:
+      - "5000:5000" # Opens the door from Container Port 5000 to Windows Port 5000
+    volumes:
+      - .:/app # Mirrors your Windows folder into the container (Live Editing!)
+    environment:
+      - FLASK_DEBUG=1
+    # This command launches your Flask app
+    command: python run_app.py

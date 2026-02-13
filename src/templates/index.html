@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retention System v2 | Enterprise Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar / Header -->
+        <aside class="sidebar">
+            <h1 class="brand">Retention<br>System v2</h1>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="single">
+                    <span class="icon">Single Prediction</span>
+                </button>
+                <button class="nav-btn" data-tab="batch">
+                    <span class="icon">Batch Upload</span>
+                </button>
+                <button class="nav-btn" data-tab="history">
+                    <span class="icon">Session History</span>
+                </button>
+            </nav>
+
+            <div class="spacer"></div>
+
+            <button id="openPsy" class="nav-btn" style="margin-bottom: 1rem;">
+                <span class="icon">Strategy Reference</span>
+            </button>
+            <a href="/api/export" class="export-btn" target="_blank">Download Report (CSV)</a>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content-area">
+
+            <!-- Tab 1: Single Prediction -->
+            <section id="single" class="tab-content active">
+                <div class="split-view">
+                    <div class="card input-card">
+                        <h2>New Calculation</h2>
+                        <form id="predictionForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Customer ID (Optional)</label>
+                                    <input type="text" name="customerID" placeholder="e.g. 7590-VHVEG">
+                                </div>
+                                <div class="form-group">
+                                    <label>Contract Type</label>
+                                    <select name="Contract" required>
+                                        <option value="Month-to-month">Month-to-month</option>
+                                        <option value="One year">One year</option>
+                                        <option value="Two year">Two year</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Internet Service</label>
+                                    <select name="InternetService" required>
+                                        <option value="Fiber optic">Fiber Optic</option>
+                                        <option value="DSL">DSL</option>
+                                        <option value="No">None</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Payment Method</label>
+                                    <select name="PaymentMethod" required>
+                                        <option value="Electronic check">Electronic Check</option>
+                                        <option value="Mailed check">Mailed Check</option>
+                                        <option value="Bank transfer (automatic)">Bank Transfer</option>
+                                        <option value="Credit card (automatic)">Credit Card</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Monthly Charges ($)</label>
+                                    <input type="number" name="MonthlyCharges" value="70.0" min="0" step="0.1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Tenure (Months)</label>
+                                    <input type="number" name="tenure" value="12" min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Total Services</label>
+                                    <input type="number" name="total_services" value="2" min="1" max="10">
+                                </div>
+                            </div>
+                            <button type="submit" class="cta-button">Analyze Risk</button>
+                        </form>
+                    </div>
+
+                    <div class="card result-card hidden" id="resultCard">
+                        <div class="result-header">
+                            <h3>Prediction Result</h3>
+                            <button id="closeResult">×</button>
+                        </div>
+                        <div class="result-body">
+                            <div class="score-circle">
+                                <span id="probValue">0</span><span class="percent">%</span>
+                                <span class="label">Churn Probability</span>
+                            </div>
+                            <div id="riskBadge" class="risk-badge">Low Risk</div>
+                            <div id="riskFactors" class="risk-factors">
+                                <h4>Key Drivers (Causal)</h4>
+                                <ul id="factorsList"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab 2: Batch Upload -->
+            <section id="batch" class="tab-content">
+                <div class="card upload-card">
+                    <h2>Bulk Analysis</h2>
+                    <p>Upload a CSV file to analyze multiple customers at once.</p>
+                    <div class="drop-zone" id="dropZone">
+                        <span class="icon">CSV</span>
+                        <p>Drag & Drop CSV here or Click to Browse</p>
+                        <input type="file" id="fileInput" accept=".csv" hidden>
+                    </div>
+                    <div id="uploadStatus" class="status-msg"></div>
+                </div>
+            </section>
+
+            <!-- Tab 3: History -->
+            <section id="history" class="tab-content">
+                <div class="card table-card">
+                    <div class="table-header">
+                        <h2>Session History</h2>
+                        <button id="clearHistory" class="text-btn">Clear History</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="historyTable">
+                            <thead>
+                                <tr>
+                                    <th>Contract</th>
+                                    <th>Tenure</th>
+                                    <th>Charges</th>
+                                    <th>Risk Level</th>
+                                    <th>Probability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- JS populates this -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Behavioral Science Slide-Over Panel -->
+        <div id="psyOverlay" class="slide-overlay hidden-panel"></div>
+        <aside id="psyPanel" class="slide-panel hidden-panel">
+            <div class="panel-header">
+                <h2>Retention Strategy Guide</h2>
+                <button id="closePsy" class="close-btn">&times;</button>
+            </div>
+
+            <div class="panel-content">
+                <div class="concept-block">
+                    <span class="concept-number">01</span>
+                    <h3>Payment Friction</h3>
+                    <p class="source-cite">Concept: Decoupling</p>
+                    <p class="concept-text">Manual payments (checks) force the customer to re-evaluate the service's
+                        value every month. This creates 12 chances per year to cancel.</p>
+                    <div class="intervention-box">
+                        <strong>Strategy:</strong> Encourage Auto-Pay. It makes the transaction invisible and reduces
+                        the friction of paying to near zero.
+                    </div>
+                </div>
+
+                <div class="concept-block">
+                    <span class="concept-number">02</span>
+                    <h3>The Power of Defaults</h3>
+                    <p class="source-cite">Concept: Status Quo Bias</p>
+                    <p class="concept-text">Customers rarely change the default setting. Month-to-month contracts make
+                        "leaving" the easy option.</p>
+                    <div class="intervention-box">
+                        <strong>Strategy:</strong> Use 1-Year Contracts. This shifts the default state to "Staying",
+                        putting the burden of effort on leaving.
+                    </div>
+                </div>
+
+                <div class="concept-block">
+                    <span class="concept-number">03</span>
+                    <h3>Price Perception</h3>
+                    <p class="source-cite">Concept: Reference Points</p>
+                    <p class="concept-text">Customers judge price based on what they expect (competitors or past price).
+                        High prices without context trigger resistance.</p>
+                    <div class="intervention-box">
+                        <strong>Strategy:</strong> If your price is higher, you must explicitly frame the value (e.g.,
+                        "3x faster speed") to justify the difference.
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>

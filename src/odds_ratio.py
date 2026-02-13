@@ -1,206 +1,107 @@
-"""
-Odds Ratio computation and Logistic Regression linearity validation.
-
-Computes odds ratios for features and validates the linear relationship
-assumption required for logistic regression.
-"""
-
-import numpy as np
 import pandas as pd
+import numpy as np
 import logging
-from scipy import stats
+from sklearn.linear_model import LogisticRegression
 
 logger = logging.getLogger(__name__)
 
-
 def compute_odds_ratios(model, feature_names):
     """
-    Compute odds ratios from logistic regression coefficients.
-    
-    Parameters
-    ----------
-    model : fitted LogisticRegression or Pipeline
-        Trained model with coefficients.
-    feature_names : list
-        Names of features.
-        
-    Returns
-    -------
-    DataFrame with odds ratios, CIs, and p-values.
+    Compute multivariate odds ratios from a trained Logistic Regression model.
+    OR = exp(coefficient)
     """
-    # Extract coefficients
-    if hasattr(model, 'coef_'):
-        coefs = model.coef_.flatten()
-    elif hasattr(model, 'named_steps'):
-        for step_name, step in model.named_steps.items():
-            if hasattr(step, 'coef_'):
-                coefs = step.coef_.flatten()
-                break
-    else:
-        raise ValueError("Model does not have coefficients")
+    if not hasattr(model, 'coef_'):
+        logger.warning("Model does not have coefficients (not LR?).")
+        return pd.DataFrame()
     
-    # Compute odds ratios (exp of coefficients)
+    coefs = model.coef_[0]
     odds_ratios = np.exp(coefs)
     
     results = pd.DataFrame({
-        'feature': feature_names[:len(coefs)],
+        'feature': feature_names[:len(coefs)] if feature_names else range(len(coefs)),
         'coefficient': coefs,
-        'odds_ratio': odds_ratios,
-        'effect': ['protective' if or_ < 1 else 'risk' for or_ in odds_ratios]
+        'odds_ratio': odds_ratios
     })
+    
+    # Add effect interpretation
+    results['effect'] = results['odds_ratio'].apply(
+        lambda x: f"Increases risk by {(x-1)*100:.1f}%" if x > 1 else f"Decreases risk by {(1-x)*100:.1f}%"
+    )
     
     return results.sort_values('odds_ratio', ascending=False)
 
-
-def validate_linearity(X, y, feature_names, n_bins=10):
-    """
-    Validate linearity assumption for logistic regression using
-    the empirical logit method.
-    
-    For each continuous feature, bins the data and computes
-    empirical log-odds. Linear relationship = valid assumption.
-    
-    Parameters
-    ----------
-    X : array-like
-        Feature matrix.
-    y : array-like
-        Binary target.
-    feature_names : list
-        Names of features.
-    n_bins : int
-        Number of bins for continuous features.
-        
-    Returns
-    -------
-    DataFrame with linearity test results per feature.
-    """
-    results = []
-    
-    X_df = pd.DataFrame(X, columns=feature_names)
-    y_series = pd.Series(y)
-    
-    for col in feature_names:
-        feature_data = X_df[col]
-        
-        # Skip binary features
-        if feature_data.nunique() <= 2:
-            results.append({
-                'feature': col,
-                'type': 'binary',
-                'linearity_valid': True,
-                'correlation': np.nan,
-                'p_value': np.nan
-            })
-            continue
-        
-        try:
-            # Bin continuous features
-            bins = pd.qcut(feature_data, q=n_bins, duplicates='drop')
-            
-            # Compute empirical log-odds per bin
-            grouped = y_series.groupby(bins)
-            
-            log_odds = []
-            bin_means = []
-            
-            for bin_label, group in grouped:
-                if len(group) > 0:
-                    p = group.mean()
-                    # Avoid log(0) with smoothing
-                    p = np.clip(p, 0.01, 0.99)
-                    log_odds.append(np.log(p / (1 - p)))
-                    bin_means.append(feature_data[group.index].mean())
-            
-            if len(log_odds) >= 3:
-                # Test linearity with Pearson correlation
-                corr, p_val = stats.pearsonr(bin_means, log_odds)
-                linearity_valid = abs(corr) > 0.7 and p_val < 0.05
-            else:
-                corr, p_val = np.nan, np.nan
-                linearity_valid = True  # Not enough data to reject
-                
-            results.append({
-                'feature': col,
-                'type': 'continuous',
-                'linearity_valid': linearity_valid,
-                'correlation': corr,
-                'p_value': p_val
-            })
-            
-        except Exception as e:
-            logger.warning(f"Could not validate linearity for {col}: {e}")
-            results.append({
-                'feature': col,
-                'type': 'unknown',
-                'linearity_valid': True,
-                'correlation': np.nan,
-                'p_value': np.nan
-            })
-    
-    return pd.DataFrame(results)
-
-
 def compute_univariate_odds_ratios(X, y, feature_names):
     """
-    Compute univariate odds ratios for each feature.
-    
-    This is useful for initial feature screening before
-    multivariate logistic regression.
-    
-    Parameters
-    ----------
-    X : array-like
-        Feature matrix.
-    y : array-like
-        Binary target.
-    feature_names : list
-        Names of features.
-        
-    Returns
-    -------
-    DataFrame with univariate odds ratios.
+    Compute univariate odds ratios by training a separate LR for each feature.
+    Helpful for understanding raw risk factors without confounders.
     """
-    from sklearn.linear_model import LogisticRegression
+    results = []
+    
+    for i, feature in enumerate(feature_names):
+        try:
+            # Reshape for single feature
+            X_feat = X[:, i].reshape(-1, 1)
+            
+            # Simple LR
+            lr = LogisticRegression(solver='lbfgs', class_weight='balanced', random_state=42)
+            lr.fit(X_feat, y)
+            
+            coef = lr.coef_[0][0]
+            or_val = np.exp(coef)
+            
+            results.append({
+                'feature': feature,
+                'univariate_coef': coef,
+                'univariate_odds_ratio': or_val
+            })
+        except Exception as e:
+            logger.warning(f"Error computing univariate OR for {feature}: {e}")
+            
+    return pd.DataFrame(results).sort_values('univariate_odds_ratio', ascending=False)
+
+def validate_linearity(X, y, feature_names):
+    """
+    Validate linearity assumption for continuous features using Box-Tidwell test logic
+    (adding Interaction with log-transform).
+    
+    Returns DataFrame with 'linearity_valid' boolean.
+    """
+    # Identify continuous columns (heuristic: more than 10 unique values)
+    # Using the passed X matrix
+    df_check = pd.DataFrame(X, columns=feature_names)
+    continuous_cols = [col for col in feature_names if df_check[col].nunique() > 10]
     
     results = []
     
-    for i, col in enumerate(feature_names):
+    for col in continuous_cols:
         try:
-            # Fit univariate logistic regression
-            lr = LogisticRegression(max_iter=1000, solver='lbfgs')
-            lr.fit(X[:, i].reshape(-1, 1), y)
+            # Add x * log(x) term
+            x = df_check[col].values
+            # Handle zeros or negative by shifting
+            x_safe = x + 1.0 - x.min() if x.min() <= 0 else x
+            x_log = x_safe * np.log(x_safe)
             
-            coef = lr.coef_[0, 0]
-            odds_ratio = np.exp(coef)
+            X_test = np.column_stack([x, x_log])
             
-            # Approximate 95% CI using Wald method
-            # SE ≈ 1 / sqrt(n * p * (1-p) * var(x))
-            p = y.mean()
-            se = 1 / np.sqrt(len(y) * p * (1 - p) * np.var(X[:, i]))
+            lr = LogisticRegression(solver='lbfgs', class_weight='balanced', max_iter=1000)
+            lr.fit(X_test, y)
             
-            ci_lower = np.exp(coef - 1.96 * se)
-            ci_upper = np.exp(coef + 1.96 * se)
+            # Check p-value of the interaction term? 
+            # Scikit-learn doesn't give p-values easily. 
+            # We'll usage coefficient magnitude heuristic: if interaction coef is large vs main coef, assumption violated.
+            
+            coef_main = lr.coef_[0][0]
+            coef_inter = lr.coef_[0][1]
+            
+            # Heuristic: if interaction effect is significant relative to main effect
+            is_valid = abs(coef_inter) < 0.1 or abs(coef_inter) < abs(coef_main) * 0.5
             
             results.append({
                 'feature': col,
-                'coefficient': coef,
-                'odds_ratio': odds_ratio,
-                'ci_lower': ci_lower,
-                'ci_upper': ci_upper,
-                'significant': not (ci_lower <= 1 <= ci_upper)
+                'linearity_valid': is_valid,
+                'interaction_coef': coef_inter
             })
+        except:
+            results.append({'feature': col, 'linearity_valid': True})
             
-        except Exception as e:
-            logger.warning(f"Could not compute OR for {col}: {e}")
-            results.append({
-                'feature': col,
-                'coefficient': np.nan,
-                'odds_ratio': np.nan,
-                'ci_lower': np.nan,
-                'ci_upper': np.nan,
-                'significant': False
-            })
-    
-    df = pd.DataFrame(results)
-    return df.sort_values('odds_ratio', ascending=False)
+    return pd.DataFrame(results)

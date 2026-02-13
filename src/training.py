@@ -8,12 +8,6 @@ import logging
 import numpy as np
 import pandas as pd
 
-from sklearn.linear_model import LogisticRegression
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import StratifiedKFold, cross_val_score
-from sklearn.metrics import recall_score, f1_score, precision_score, make_scorer
-from xgboost import XGBClassifier
-
 try:
     import optuna
     optuna.logging.set_verbosity(optuna.logging.WARNING)
@@ -21,60 +15,162 @@ try:
 except ImportError:
     OPTUNA_AVAILABLE = False
 
+from sklearn.model_selection import RandomizedSearchCV, StratifiedKFold, cross_val_score
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import recall_score, f1_score, precision_score
+from xgboost import XGBClassifier
 from src.utils import setup_logger
-from src.monte_carlo_lr import MonteCarloLogisticRegression
 
 logger = setup_logger(__name__)
 
-
-def find_optimal_threshold(model, X_val, y_val, metric='recall', search_range=None):
+def train_xgboost_with_optuna(X_train, y_train, config):
     """
-    Find optimal classification threshold by maximizing a metric.
+    Train XGBoost Classifier using Optuna for hyperparameter optimization.
+
+    Args:
+        X_train (pd.DataFrame or np.ndarray): Training features.
+        y_train (pd.Series or np.ndarray): Training labels.
+        config (Config): Configuration object containing tuning parameters.
+
+    Returns:
+        XGBClassifier: The fitted best model.
+    """
+    if not OPTUNA_AVAILABLE:
+        logger.warning("Optuna missing, using default XGBoost.")
+        scale_pos_weight = (y_train == 0).sum() / max((y_train == 1).sum(), 1)
+        model = XGBClassifier(scale_pos_weight=scale_pos_weight, random_state=config.RANDOM_STATE)
+        model.fit(X_train, y_train)
+        return model
+
+    # Tuning config
+    xg_conf = config.PIPELINE_CONFIG["tuning"]["xgboost"]
+    cv_config = config.PIPELINE_CONFIG["cv"]
+    cv = StratifiedKFold(n_splits=cv_config["n_splits"], shuffle=True, random_state=config.RANDOM_STATE)
+    scale_pos_weight = (y_train == 0).sum() / max((y_train == 1).sum(), 1)
+
+    def objective(trial):
+        param = {
+            'n_estimators': 300,
+            'max_depth': trial.suggest_int('max_depth', 3, 9),
+            'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3, log=True),
+            'subsample': trial.suggest_float('subsample', 0.6, 1.0),
+            'colsample_bytree': trial.suggest_float('colsample_bytree', 0.6, 1.0),
+            'reg_alpha': trial.suggest_float('reg_alpha', 1e-3, 10.0, log=True),
+            'reg_lambda': trial.suggest_float('reg_lambda', 1e-3, 10.0, log=True),
+            'min_child_weight': 5,
+            'scale_pos_weight': scale_pos_weight,
+            'eval_metric': 'logloss',
+            'n_jobs': 1,  # Parallelism handled by Optuna if needed, or outer loop
+            'random_state': config.RANDOM_STATE
+        }
+        
+        model = XGBClassifier(**param)
+        # Optimize ROC-AUC to balance precision/recall capability
+        score = cross_val_score(model, X_train, y_train, cv=cv, scoring='roc_auc', n_jobs=1).mean()
+        return score
+
+    logger.info("Tuning XGBoost with Optuna...")
+    study = optuna.create_study(direction='maximize')
+    study.optimize(objective, n_trials=xg_conf["n_trials"], show_progress_bar=True)
+    
+    best_params = study.best_trial.params
+    # Add fixed params back
+    best_params.update({
+        'n_estimators': 300, 
+        'min_child_weight': 5, 
+        'scale_pos_weight': scale_pos_weight,
+        'eval_metric': 'logloss', 
+        'random_state': config.RANDOM_STATE
+    })
+    
+    logger.info(f"Best XGB Params: depth={best_params['max_depth']}, lr={best_params['learning_rate']:.3f}, AUC={study.best_value:.4f}")
+    
+    final_model = XGBClassifier(**best_params)
+    final_model.fit(X_train, y_train)
+    return final_model
+
+
+def train_dt_with_search(X_train, y_train, config):
+    """
+    Train Decision Tree Classifier using RandomizedSearchCV.
+
+    Args:
+        X_train (array-like): Training features.
+        y_train (array-like): Training labels.
+        config (Config): Configuration object.
+
+    Returns:
+        DecisionTreeClassifier: The fitted best estimator.
+    """
+    dt_conf = config.PIPELINE_CONFIG["tuning"]["decision_tree"]
+    
+    param_dist = dt_conf["param_space"]
+    # Add Fixed params
+    param_dist['class_weight'] = ['balanced', None]
+    
+    dt = DecisionTreeClassifier(random_state=config.RANDOM_STATE)
+    
+    search = RandomizedSearchCV(
+        dt, 
+        param_distributions=param_dist,
+        n_iter=dt_conf["n_iter"],
+        scoring='roc_auc',
+        cv=5,
+        random_state=config.RANDOM_STATE,
+        n_jobs=-1
+    )
+    
+    logger.info("Tuning Decision Tree...")
+    search.fit(X_train, y_train)
+    logger.info(f"Best DT Params: {search.best_params_}, AUC={search.best_score_:.4f}")
+    
+    return search.best_estimator_
+
+
+
+
+
+def find_optimal_threshold(model, X_val, y_val, metric='recall', constraint_metric=None, constraint_value=None):
+    """
+    Find optimal classification threshold by maximizing a metric, optionally with a constraint.
     
     Parameters
     ----------
     model : fitted model
-        Model with predict_proba.
     X_val : array-like
-        Validation features.
     y_val : array-like
-        Validation labels.
-    metric : str
-        Metric to optimize ('recall', 'f1', 'youden_j').
-    search_range : list
-        Thresholds to search.
+    metric : str ('recall', 'f1')
+    constraint_metric : str ('precision'), optional
+    constraint_value : float, optional
+         Minimum value for constraint metric (e.g. 0.5 for Precision >= 0.5)
         
     Returns
     -------
     optimal_threshold : float
-        Best threshold found.
     best_score : float
-        Score at optimal threshold.
     """
-    if search_range is None:
-        search_range = np.arange(0.1, 0.9, 0.05)
+    # Search range from 0.3 to 0.7 (avoiding extremes)
+    search_range = np.arange(0.3, 0.75, 0.01)
     
     probs = model.predict_proba(X_val)[:, 1]
     
     best_threshold = 0.5
-    best_score = 0
+    best_score = -1
     
     for threshold in search_range:
         y_pred = (probs >= threshold).astype(int)
         
+        # Check constraint first
+        if constraint_metric == 'precision':
+            prec = precision_score(y_val, y_pred, zero_division=0)
+            if prec < constraint_value:
+                continue # Skip if constraint not met
+                
         if metric == 'recall':
             score = recall_score(y_val, y_pred, zero_division=0)
         elif metric == 'f1':
             score = f1_score(y_val, y_pred, zero_division=0)
-        elif metric == 'youden_j':
-            # Youden's J = sensitivity + specificity - 1
-            tp = np.sum((y_pred == 1) & (y_val == 1))
-            tn = np.sum((y_pred == 0) & (y_val == 0))
-            fp = np.sum((y_pred == 1) & (y_val == 0))
-            fn = np.sum((y_pred == 0) & (y_val == 1))
-            sensitivity = tp / (tp + fn) if (tp + fn) > 0 else 0
-            specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-            score = sensitivity + specificity - 1
         else:
             score = recall_score(y_val, y_pred, zero_division=0)
         
@@ -82,136 +178,52 @@ def find_optimal_threshold(model, X_val, y_val, metric='recall', search_range=No
             best_score = score
             best_threshold = threshold
     
-    logger.info(f"Optimal threshold: {best_threshold:.3f} ({metric}={best_score:.4f})")
+    if best_score == -1:
+        logger.warning(f"No threshold constrained satisfaction found. Defaulting to 0.5")
+        best_threshold = 0.5
+        best_score = recall_score(y_val, (probs >= 0.5).astype(int))
+
+    logger.info(f"Optimal threshold: {best_threshold:.3f} ({metric}={best_score:.4f} | precision>={constraint_value})")
     return best_threshold, best_score
 
 
-def optuna_objective(trial, X, y, cv, config):
-    """Optuna objective function for logistic regression tuning."""
-    
-    param_space = config.PIPELINE_CONFIG["tuning"]["param_space"]
+def train_logistic_cv(X_train, y_train, config):
+    """
+    Train Logistic Regression with efficient Cross-Validation (L2 penalty).
+    Equivalent to Grid Search but faster and cleaner.
+    """
     lr_config = config.PIPELINE_CONFIG["logistic_regression"]
     
-    # Sample hyperparameters
-    C = trial.suggest_float("C", param_space["C"]["low"], param_space["C"]["high"], log=True)
-    l1_ratio = trial.suggest_float("l1_ratio", param_space["l1_ratio"]["low"], param_space["l1_ratio"]["high"])
-    
-    model = LogisticRegression(
-        C=C,
-        l1_ratio=l1_ratio,
-        penalty=lr_config["penalty"],
-        solver=lr_config["solver"],
-        class_weight=lr_config["class_weight"],
-        max_iter=lr_config["max_iter"],
-        random_state=lr_config["random_state"]
+    # LogisticRegressionCV with L2 regularization
+    # Automatically tries 10 values of C logarithmically (e.g. 1e-4 to 1e4)
+    model = LogisticRegressionCV(
+        Cs=20,  # Try 20 values for C
+        cv=5, 
+        penalty='l2',
+        solver='lbfgs',
+        scoring='roc_auc',  # Optimize ROC-AUC during CV
+        class_weight='balanced',
+        max_iter=3000,
+        random_state=config.RANDOM_STATE,
+        n_jobs=-1
     )
     
-    # Cross-validation
-    metric = config.PIPELINE_CONFIG["tuning"]["metric"]
-    if metric == "recall":
-        scorer = make_scorer(recall_score)
-    elif metric == "f1":
-        scorer = make_scorer(f1_score)
-    else:
-        scorer = make_scorer(recall_score)
-    
-    scores = cross_val_score(model, X, y, cv=cv, scoring=scorer)
-    
-    return scores.mean()
-
-
-def train_logistic_with_optuna(X_train, y_train, config):
-    """
-    Train logistic regression with Optuna hyperparameter optimization.
-    
-    Returns
-    -------
-    model : fitted LogisticRegression
-        Best model found.
-    study : optuna.Study
-        Optuna study object.
-    """
-    if not OPTUNA_AVAILABLE:
-        logger.warning("Optuna not installed. Using default hyperparameters.")
-        lr_config = config.PIPELINE_CONFIG["logistic_regression"]
-        model = LogisticRegression(
-            C=1.0,
-            l1_ratio=0.5,
-            penalty=lr_config["penalty"],
-            solver=lr_config["solver"],
-            class_weight=lr_config["class_weight"],
-            max_iter=lr_config["max_iter"],
-            random_state=lr_config["random_state"]
-        )
-        model.fit(X_train, y_train)
-        return model, None
-    
-    # Setup CV
-    cv_config = config.PIPELINE_CONFIG["cv"]
-    cv = StratifiedKFold(
-        n_splits=cv_config["n_splits"],
-        shuffle=cv_config["shuffle"],
-        random_state=cv_config["random_state"]
-    )
-    
-    # Run Optuna
-    tuning_config = config.PIPELINE_CONFIG["tuning"]
-    
-    study = optuna.create_study(direction=tuning_config["direction"])
-    study.optimize(
-        lambda trial: optuna_objective(trial, X_train, y_train, cv, config),
-        n_trials=tuning_config["n_trials"],
-        show_progress_bar=True
-    )
-    
-    logger.info(f"Best trial: {study.best_trial.params}")
-    logger.info(f"Best CV {tuning_config['metric']}: {study.best_value:.4f}")
-    
-    # Train final model with best params
-    lr_config = config.PIPELINE_CONFIG["logistic_regression"]
-    best_params = study.best_trial.params
-    
-    model = LogisticRegression(
-        C=best_params["C"],
-        l1_ratio=best_params["l1_ratio"],
-        penalty=lr_config["penalty"],
-        solver=lr_config["solver"],
-        class_weight=lr_config["class_weight"],
-        max_iter=lr_config["max_iter"],
-        random_state=lr_config["random_state"]
-    )
     model.fit(X_train, y_train)
+    logger.info(f"LR CV Best C: {model.C_[0]:.4f}")
+    logger.info(f"LR CV Best Score (ROC-AUC): {model.scores_[1].mean(axis=0).max():.4f}")
     
-    # Save study results
-    os.makedirs(config.METRICS_PATH, exist_ok=True)
-    trials_df = study.trials_dataframe()
-    trials_df.to_csv(os.path.join(config.METRICS_PATH, "optuna_study.csv"), index=False)
-    logger.info("Saved Optuna study to optuna_study.csv")
-    
-    return model, study
+    return model, None
+
+
+
+
+
+
 
 
 def train_models(X_train, y_train, config=None):
     """
     Train all models with proper class balancing and hyperparameter tuning.
-    
-    Parameters
-    ----------
-    X_train : array-like
-        Training features.
-    y_train : array-like
-        Training labels.
-    config : Config, optional
-        Configuration object. If None, uses defaults.
-        
-    Returns
-    -------
-    trained_models : dict
-        Dictionary of trained models.
-    optimal_thresholds : dict
-        Optimal thresholds per model.
-    optuna_study : optuna.Study or None
-        Optuna study if used.
     """
     from src.config import Config
     if config is None:
@@ -219,90 +231,56 @@ def train_models(X_train, y_train, config=None):
     
     logger.info("Training models...")
     
-    # Class imbalance ratio for XGBoost
-    scale_pos_weight = (y_train == 0).sum() / max((y_train == 1).sum(), 1)
+    # 1. Train Logistic Regression with Efficient CV (L2 Ridge)
+    logger.info("Training Logistic Regression with CV (L2 Ridge)...")
+    lr_model, _ = train_logistic_cv(X_train, y_train, config)
     
-    # 1. Train Logistic Regression with Optuna
-    logger.info("Training Logistic Regression with Optuna optimization...")
-    lr_model, optuna_study = train_logistic_with_optuna(X_train, y_train, config)
+    # 2. Train XGBoost (Optuna Tuned)
+    logger.info("Training XGBoost (Optuna)...")
+    xgb_model = train_xgboost_with_optuna(X_train, y_train, config)
     
-    # 2. Other models
-    models = {
+    # 3. Train Decision Tree (RandomizedSearch)
+    logger.info("Training Decision Tree (RandomizedSearch)...")
+    dt_model = train_dt_with_search(X_train, y_train, config)
+    
+    trained_models = {
         "logistic_regression": lr_model,
-        "xgboost": XGBClassifier(
-            n_estimators=500,
-            max_depth=4,
-            learning_rate=0.05,
-            subsample=0.8,
-            colsample_bytree=0.8,
-            scale_pos_weight=scale_pos_weight,
-            random_state=config.RANDOM_STATE,
-            eval_metric='logloss'
-        ),
-        "decision_tree": DecisionTreeClassifier(
-            class_weight="balanced",
-            random_state=config.RANDOM_STATE
-        )
+        "xgboost": xgb_model,
+        "decision_tree": dt_model
     }
     
-    trained_models = {"logistic_regression": lr_model}
-    
-    for name, model in models.items():
-        if name != "logistic_regression":
-            logger.info(f"Training {name}...")
-            model.fit(X_train, y_train)
-            trained_models[name] = model
-            logger.info(f"{name} trained.")
-    
-    # 3. Find optimal thresholds for both recall and F1
-    logger.info("Finding optimal thresholds for recall and F1...")
-    threshold_config = config.PIPELINE_CONFIG["threshold"]
+    # 4. Find optimal thresholds (Precision >= 0.5 constraint)
+    logger.info("Finding optimal thresholds (Constraint: Precision >= 0.5)...")
     optimal_thresholds = {}
     optimal_thresholds_f1 = {}
     
     for name, model in trained_models.items():
         if hasattr(model, 'predict_proba'):
-            # Use a portion of training data as validation for threshold
             val_size = int(0.2 * len(X_train))
             X_val, y_val = X_train[-val_size:], y_train[-val_size:]
             
-            # Optimize for recall
-            logger.info(f"{name} - Optimizing for recall:")
+            # Recall Optimization (Constraint: Precision >= 0.5)
+            logger.info(f"{name} - Optimizing Recall (Precision >= 0.5):")
             opt_thresh_recall, _ = find_optimal_threshold(
                 model, X_val, y_val,
                 metric='recall',
-                search_range=threshold_config["search_range"]
+                constraint_metric='precision',
+                constraint_value=0.5
             )
             optimal_thresholds[name] = opt_thresh_recall
             
-            # Optimize for F1
-            logger.info(f"{name} - Optimizing for F1:")
+            # F1 Optimization
+            logger.info(f"{name} - Optimizing F1:")
             opt_thresh_f1, _ = find_optimal_threshold(
                 model, X_val, y_val,
-                metric='f1',
-                search_range=threshold_config["search_range"]
+                metric='f1'
             )
             optimal_thresholds_f1[name] = opt_thresh_f1
         else:
             optimal_thresholds[name] = 0.5
             optimal_thresholds_f1[name] = 0.5
-
-    
-    # 4. Create Monte Carlo wrapper for LR
-    logger.info("Creating Monte Carlo Logistic Regression for uncertainty...")
-    mc_config = config.PIPELINE_CONFIG["monte_carlo"]
-    
-    mc_lr = MonteCarloLogisticRegression(
-        base_model=lr_model,
-        n_simulations=mc_config["n_simulations"],
-        n_jobs=mc_config["n_jobs"],
-        random_state=config.RANDOM_STATE
-    )
-    mc_lr.fit(X_train, y_train)
-    trained_models["monte_carlo_lr"] = mc_lr
-    optimal_thresholds["monte_carlo_lr"] = optimal_thresholds.get("logistic_regression", 0.5)
-    
+            
     logger.info("All models trained successfully.")
     
-    return trained_models, optimal_thresholds, optimal_thresholds_f1, optuna_study
+    return trained_models, optimal_thresholds, optimal_thresholds_f1, None
 

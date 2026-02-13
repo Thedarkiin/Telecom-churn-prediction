@@ -15,6 +15,7 @@ Complete ML pipeline with:
 
 import os
 import logging
+import shutil
 import pandas as pd
 import warnings
 
@@ -30,17 +31,45 @@ from src.double_ml import run_double_ml
 from src.explainability import run_explainability
 
 
+def clear_results():
+    """Remove all previous results to keep only the latest run."""
+    result_dirs = [
+        Config.METRICS_PATH,
+        Config.PREDICTIONS_PATH,
+        Config.EXPLAINABILITY_PATH,
+        Config.CAUSAL_PATH
+    ]
+    for folder in result_dirs:
+        try:
+            if os.path.exists(folder):
+                shutil.rmtree(folder)
+        except PermissionError:
+            # On Windows, files may be locked - just clear contents
+            for file in os.listdir(folder):
+                try:
+                    os.remove(os.path.join(folder, file))
+                except:
+                    pass
+        os.makedirs(folder, exist_ok=True)
+    
+    # Also clear logs
+    try:
+        if os.path.exists("logs"):
+            shutil.rmtree("logs")
+    except PermissionError:
+        pass
+    os.makedirs("logs", exist_ok=True)
+
+
 def main():
+    # Clear previous results - only keep latest run
+    clear_results()
+    
     logger = setup_logger("logs/pipeline.log")
     logger.info("=" * 60)
     logger.info("Starting Enhanced Churn Prediction Pipeline")
     logger.info("=" * 60)
-    
-    # Create output directories
-    os.makedirs(Config.METRICS_PATH, exist_ok=True)
-    os.makedirs(Config.PREDICTIONS_PATH, exist_ok=True)
-    os.makedirs(Config.EXPLAINABILITY_PATH, exist_ok=True)
-    os.makedirs(Config.CAUSAL_PATH, exist_ok=True)
+    logger.info("Cleared previous results - fresh run starting")
     
     # 1. PREPROCESSING
     logger.info("\n[STEP 1] PREPROCESSING")
@@ -80,6 +109,25 @@ def main():
     logger.info("Optimal thresholds (F1-optimized):")
     for name, thresh in optimal_thresholds_f1.items():
         logger.info(f"  {name}: {thresh:.3f}")
+        
+    # SAVE MODELS & ARTIFACTS
+    import joblib
+    os.makedirs('models', exist_ok=True)
+    
+    # Save Feature Names
+    joblib.dump(feature_names, 'models/feature_names.pkl')
+    logger.info(f"Saved feature names to models/feature_names.pkl")
+    
+    # Save Best Model (XGBoost)
+    if "xgboost" in models:
+        joblib.dump(models["xgboost"], 'models/xgboost_model.pkl')
+        logger.info(f"Saved XGBoost model to models/xgboost_model.pkl")
+    
+    # Save Logistic Regression (for Double ML/Odds Ratios context)
+    if "logistic_regression" in models:
+        joblib.dump(models["logistic_regression"], 'models/lr_model.pkl')
+        logger.info(f"Saved LR model to models/lr_model.pkl")
+
     
     # 4. EVALUATION - Recall-optimized thresholds
     logger.info("\n[STEP 4a] MODEL EVALUATION (Recall-optimized thresholds)")
@@ -129,8 +177,37 @@ def main():
         interpretation_path = os.path.join(Config.CAUSAL_PATH, "double_ml_interpretation.txt")
         with open(interpretation_path, 'w') as f:
             f.write(dml.interpret())
+        import json
         logger.info("Saved Double ML causal analysis")
         logger.info(f"ATE: {dml.ate_:.4f}, CI: [{dml.ate_ci_[0]:.4f}, {dml.ate_ci_[1]:.4f}]")
+        
+        # GENERATE JSON FOR APP
+        # We create a simple rule: if ATE is negative and significant -> Action: "Encourage this!"
+        # If ATE is positive and significant -> Action: "Avoid/Change this!"
+        # This is strictly bound to the treatment variable (Contract_Two year)
+        
+        treatment = Config.PIPELINE_CONFIG["double_ml"]["treatment_variable"]
+        is_significant = not (dml.ate_ci_[0] <= 0 <= dml.ate_ci_[1])
+        effect_direction = "reduces" if dml.ate_ < 0 else "increases"
+        
+        dml_summary = {}
+        
+        # Add the main treatment insight
+        if is_significant:
+            desc = f"Switching to {treatment} strictly {effect_direction} churn risk by {abs(dml.ate_)*100:.1f}% on average."
+            action = "Promote 2-year contracts actively." if dml.ate_ < 0 else "Investigate why 2-year contracts cause churn."
+            
+            # Map back to raw value for app lookup (Contract_Two year -> Contract_Two year)
+            # The app looks up keys like "Contract_Two year", "InternetService_Fiber optic" etc.
+            dml_summary[treatment] = {
+                "description": desc,
+                "action": action
+            }
+        
+        with open('models/double_ml_summary.json', 'w') as f:
+            json.dump(dml_summary, f, indent=4)
+        logger.info("Saved Double ML summary for App (models/double_ml_summary.json)")
+
     except Exception as e:
         logger.warning(f"Double ML analysis failed: {e}")
     

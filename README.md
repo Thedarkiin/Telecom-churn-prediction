@@ -1,140 +1,66 @@
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/downloads/release/python/)
-[![CI](https://github.com/Thedarkiin/telecom-project/workflows/CI/badge.svg)](https://github.com/Thedarkiin/telecom-project/actions)
+# Retention System v2
+**Road to Causal Machine Learning**
 
-# Telecom Churn Prediction Pipeline
+## Project Philosophy: "Level 3" Engineering
+This project was designed to mimic a high-stakes production workflow. Lacking a massive enterprise data warehouse, I focused on "stealing the ideas" behind production systems—rigor, modularity, and causality—to build a solution that goes beyond simple prediction.
 
-## 🚀 Overview
-
-A modular machine learning pipeline for predicting customer churn using the Kaggle Telco dataset (~7 000 customers, 21 columns).  
-The aim is to identify which subscribers are likely to leave and highlight the key factors behind their decisions.
-
-> **"A business problem tackled through a clean ML structure."**
-
-A quick fact: Telecom companies save up to **7 times more** when retaining an existing customer than acquiring a new one.
+The goal was not just to build a model, but to build a **System** that an imaginary Business Intelligence team could actually use to make decisions.
 
 ---
 
-## 💼 Business Problem & Solution
+## 1. The Statistical Foundation (INSEA Roots)
+The journey began with the fundamentals of statistics. Before jumping to complex black boxes, I pushed **Logistic Regression** to its absolute limit.
+*   **Feature Engineering**: Rigorous selection of the most informative variables.
+*   **Regularization**: Applying penalties to prevent overfitting.
+*   **Hyperparameter Tuning**: Ensuring the linear boundaries were optimal.
 
-### The Challenge
-Customer churn is a silent revenue killer. Identifying at-risk customers *after* they've decided to leave is too late. The challenge is to predict churn probability *before* it happens and understand *why*.
+This phase ensured the project was grounded in the "good habits" of a statistician: understanding the data distribution before trying to predict it.
 
-### The Solution
-This project provides a robust, production-ready pipeline that:
-1.  **Predicts Churn Probability**: Uses Logistic Regression (with 74% accuracy & 79% recall) to flag at-risk customers.
-2.  **Identifies Key Drivers**: Uses Odds Ratios to quantify exactly how much risky behaviors (like month-to-month contracts) increase churn risk.
-3.  **Validates Causality**: Uses Double Machine Learning to separate true causal drivers from mere correlations.
-4.  **Quantifies Uncertainty**: Uses Monte Carlo simulations to tell you how confident the model is in its predictions.
+## 2. The Move to State-of-the-Art (XGBoost + Optuna)
+While Logistic Regression provides interpretability, production systems demand peak performance. I transitioned to **XGBoost**, the current industry standard for tabular data.
+*   **Optimization**: I didn't just run the model; I "cooked" it using **Optuna** for Bayesian hyperparameter search.
+*   **Result**: A highly calibrated model that maximizes Recall (catching churners) without sacrificing too much Precision.
 
----
+## 3. The Causal Leap: Beyond Correlation
+Standard Machine Learning asks: *"Attributes X and Y are correlated, so X predicts Y."*
+But as the classic fallacy goes: **Ice cream sales correlate with shark attacks**. Does banning ice cream stop sharks? No. Both are caused by *Summer*.
 
-## 📁 Project Structure & Components
+In churn prediction, "High Price" might correlate with churn, but is it the *cause*? Or is it the poor service associated with that tier?
+*   ** The Risk**: Acting on correlation creates erroneous business strategies that cost millions.
+*   **The Solution (DoubleML)**: I integrated **Double Machine Learning**, a State-of-the-Art causal inference framework. This allows us to strip away the noise and identifying the *Average Treatment Effect* (ATE)—the actual causal impact of a feature on the target.
 
-```
-churn/
-├── data/              # Dataset location
-├── logs/              # Execution logs
-├── results/           # Generated metrics, plots, and predictions
-├── src/               # Core source code
-├── pipeline.py        # Main execution entry point
-├── CODE_GUIDE.md      # Detailed technical documentation
-└── README.md          # This file
-```
+## 4. Production Readiness
 
-### 🧩 Core Components
+### Monitoring & Drift
+In the real world, human behavior changes. A model trained on 2020 data fails in 2024 because the distribution of features shifts (**Data Drift**).
+*   **Strategy**: The system is designed to be monitored, with the understanding that retraining is necessary as the "population" evolves.
 
-| Component | File | Description |
-|-----------|------|-------------|
-| **Pipeline Core** | `pipeline.py` | Orchestrates the entire flow: Loading → Cleaning → Training → Evaluation. |
-| **Config** | `src/config.py` | Central control for hyperparameters, thresholds, and toggleable features (like Causal ML). |
-| **Preprocessing** | `src/preprocessing.py` | Handles missing values, encodes categoricals, and creates features. Smartly avoids data leakage. |
-| **Training** | `src/training.py` | Trains models using **Optuna** for hyperparameter tuning. Implements stratified Cross-Validation. |
-| **Evaluation** | `src/evaluation.py` | Generates comprehensive reports: ROC-AUC, Precision-Recall, Confusion Matrices, and business metrics. |
-| **Odds Ratio** | `src/odds_ratio.py` | Calculates univariate and multivariate odds ratios to interpret Logistic Regression coefficients for business users. |
-| **Causal Inference** | `src/double_ml.py` | Implements **Double Machine Learning** to estimate the *causal* effect of treatments (e.g., contract type) on churn. |
-| **Uncertainty** | `src/monte_carlo_lr.py` | Performs Monte Carlo simulations to provide confidence intervals for model coefficients and predictions. |
+### Architecture & Modularity
+The codebase isn't a single script; it's a modular system.
+*   **Backend**: A Flask API serves the predictions, separating inference logic from the user interface.
+*   **Modularity**: Every component (preprocessing, training, inference) is decoupled. If an error occurs, we know exactly where it is.
+*   **Intervention**: To assist the business team, I added a **Behavioral Strategy** layer—translating math into "Economist suggestions" for retention (e.g., Nudging users via defaults).
+
+### Deployment (Docker)
+Finally, to prove this works on a production server:
+*   **Containerization**: The entire application is wrapped in **Docker**. It runs identically on my laptop and on a cloud server in Ohio.
 
 ---
 
-## 🔍 Model Performance
+## Technical Stack
+*   **Causal Inference**: DoubleML
+*   **Machine Learning**: XGBoost, Optuna, Scikit-Learn
+*   **Backend**: Python, Flask
+*   **Frontend**: Vanilla JavaScript
+*   **Ops**: Docker, Git
 
-The pipeline trains three models but **focuses on Logistic Regression** for interpretability and statistical rigor.
-
-| Model | Accuracy | Precision | Recall | F1‑score | ROC AUC | Threshold |
-|-------|----------|-----------|--------|----------|---------|-----------|
-| **Logistic Regression** | **0.7410** | **0.5051** | **0.7888** | **0.6178** | **0.8420** | 0.50 |
-| XGBoost | 0.7530 | 0.5241 | 0.7567 | 0.6193 | 0.8376 | 0.50 |
-| Decision Tree | 0.7374 | 0.5054 | 0.5027 | 0.5040 | 0.6629 | 0.50 |
-
-**Why Logistic Regression?**
-- **Interpretable**: Coefficients directly represent log-odds, convertible to odds ratios.
-- **Statistical validation**: Linearity assumptions tested via univariate analysis.
-- **Uncertainty quantification**: Monte Carlo simulation provides confidence intervals.
-- **Causal inference ready**: Compatible with Double ML framework.
-
----
-
-## 🎯 Logistic Regression Insights
-
-### Top Churn Risk Factors (Multivariate Odds Ratios)
-
-The logistic regression model identifies key risk factors through odds ratios:
-
-**High Risk (OR > 2.0)**:
-- **Month-to-month contract**: 4-5× higher churn risk vs. long-term contracts.
-- **No online security**: 2-3× higher risk.
-- **Fiber optic internet**: 2-2.5× higher risk (vs. DSL or no internet).
-- **Electronic check payment**: 1.5-2× higher risk.
-
-**Protective Factors (OR < 1.0)**:
-- **Long tenure** (>24 months): 60-70% lower risk.
-- **Two-year contract**: 80-90% lower risk vs. month-to-month.
-- **Tech support subscription**: 40-50% lower risk.
-
----
-
-## 🔬 Causal Inference (Double ML)
-
-Correlation does not imply causation. To dig deeper, we implemented **Double Machine Learning**.
-
-**The Findings:**
-We analyzed the causal effect of **"Month-to-month contract"** on churn.
-- **Odds Ratio**: ~4.0 (Highly correlated with churn).
-- **Causal Effect (ATE)**: ~0.0014 (0.1%).
-- **Significance**: Not statistically significant (p > 0.05).
-
-**Interpretation:**
-While customers with month-to-month contracts churn vastly more often, the *contract itself* might not be the sole cause. It is likely a proxy for other underlying factors (like tenure or customer commitment level). Simply switching a customer's contract without addressing underlying satisfaction might not significantly reduce their churn probability.
-
----
-
-## 🛠 How to Run
-
-> If you have Anaconda, I recommend creating a dedicated environment.
-
+## How to Run
 ```bash
-git clone https://github.com/Thedarkiin/telecom-project.git
-cd churn
-pip install -r requirements.txt
-python pipeline.py
+# Build the container
+docker build -t retention-v2 .
+
+# Run the system
+docker run -p 5000:5000 retention-v2
 ```
 
-**Outputs generated:**
-- `results/metrics/all_metrics.csv`
-- `results/metrics/logistic_regression_confusion_matrix.png`, etc.
-- `results/metrics/multivariate_odds_ratios.csv`
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please open an issue or pull request to suggest improvements.
-
----
-
-## 📎 About
-
-Created by [Yassin Asermouh](https://www.linkedin.com/in/yassin-asermouh-984aa8249/).  
-Built for learning, experimentation, and going beyond basic Jupyter notebooks.
-
-**Data**: [Kaggle - Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
+*Engineered by [Asermouh yassin]*

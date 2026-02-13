@@ -34,7 +34,7 @@ class Config:
             # Numeric columns
             "numeric": ["tenure", "MonthlyCharges", "TotalCharges", "SeniorCitizen"],
             # Columns to drop
-            "drop": ["customerID"]
+            "drop": ["customerID", "TotalCharges"]
         },
 
         # 2. IMPUTATION
@@ -50,7 +50,39 @@ class Config:
             "normalize": ["tenure", "TotalCharges", "MonthlyCharges", "SeniorCitizen"]
         },
 
-        # 4. SPLITTING
+        # 4. FEATURE ENGINEERING
+        "feature_engineering": {
+            # Interaction terms (non-additive effects)
+            "interaction_pairs": [
+                ["tenure", "MonthlyCharges"]  # Capture Customer Lifetime Value
+            ],
+            # Discretization for non-linear patterns
+            "binning": {
+                "columns": ["tenure", "MonthlyCharges"],
+                "n_bins": 4,
+                "strategy": "quantile"  # Equal frequency bins
+            },
+            # Polynomial features (DISABLED - user preference)
+            "polynomial": {
+                "enabled": False,  # Disabled per user request
+                "columns": ["tenure", "MonthlyCharges", "TotalCharges"],
+                "degree": 2
+            },
+            # Correlation-based feature selection (DISABLED - let regularization handle it)
+            "correlation": {
+                "enabled": False,  # ElasticNet handles multicollinearity via L1/L2
+                "min_threshold": 0.01,
+                "max_threshold": 0.95
+            },
+            # VIF-based multicollinearity removal (DISABLED - too aggressive)
+            "vif": {
+                "enabled": False,  # Regularization is sufficient
+                "threshold": 10.0
+            }
+        },
+
+
+        # 5. SPLITTING
         "splitting": {
             "method": "StratifiedShuffleSplit",
             "test_size": 0.2,
@@ -65,21 +97,37 @@ class Config:
             "random_state": 42
         },
 
-        # 6. HYPERPARAMETER TUNING (Optuna)
+        # 6. HYPERPARAMETER TUNING
         "tuning": {
-            "n_trials": 50,
-            "metric": "recall",
-            "direction": "maximize",
-            "param_space": {
-                "C": {"type": "loguniform", "low": 0.001, "high": 100},
-                "l1_ratio": {"type": "uniform", "low": 0.0, "high": 1.0}
+            "cv_splits": 5,
+            # XGBoost Search Space (Optuna)
+            "xgboost": {
+                "n_trials": 20,
+                "param_space": {
+                    "max_depth": {"type": "int", "low": 3, "high": 9},
+                    "learning_rate": {"type": "loguniform", "low": 0.01, "high": 0.3},
+                    "subsample": {"type": "float", "low": 0.6, "high": 1.0},
+                    "colsample_bytree": {"type": "float", "low": 0.6, "high": 1.0},
+                    "reg_alpha": {"type": "loguniform", "low": 1e-3, "high": 10.0},
+                    "reg_lambda": {"type": "loguniform", "low": 1e-3, "high": 10.0}
+                }
+            },
+            # Decision Tree Search Space (Grid/Random)
+            "decision_tree": {
+                "n_iter": 50,
+                "param_space": {
+                    "max_depth": [4, 6, 8, 10, 12, None],
+                    "min_samples_split": [10, 20, 40, 60],
+                    "min_samples_leaf": [5, 10, 20],
+                    "max_features": ["sqrt", None]
+                }
             }
         },
 
         # 7. LOGISTIC REGRESSION CONFIG
         "logistic_regression": {
-            "penalty": "elasticnet",
-            "solver": "saga",
+            "penalty": "l2",
+            "solver": "lbfgs",
             "class_weight": "balanced",
             "max_iter": 2000,
             "random_state": 42
@@ -87,25 +135,28 @@ class Config:
 
         # 8. THRESHOLD OPTIMIZATION
         "threshold": {
-            "optimize": False,  # Use fixed 0.5 threshold for standard comparison
-            "metric": "f1",
-            "default_threshold": 0.5,  # Standard threshold
-            "search_range": [0.5]  # Fixed at 0.5
+            "optimize": False,  # Use fixed threshold
+            "metric": "recall",
+            "default_threshold": 0.52,  # 52% probability for churn classification
+            "search_range": [0.52]  # Fixed at 52%
         },
 
-        # 9. MONTE CARLO SIMULATION
+
+        # 9. MONTE CARLO SIMULATION (DISABLED)
         "monte_carlo": {
-            "n_simulations": 30,  # Reduced from 100 to avoid memory issues
+            "enabled": False,  # Disabled - using standard LR only
+            "n_simulations": 30,
             "confidence_level": 0.95,
-            "n_jobs": 1  # Disabled parallel to avoid memory issues
+            "n_jobs": 1
         },
 
         # 10. DOUBLE ML (Causal Inference)
         "double_ml": {
-            "treatment_variable": "Contract",  # Month-to-month vs longer
-            "treatment_value": "Month-to-month",
+            "treatment_variable": "Contract_Two year",  # Protective factor vs Month-to-month (reference)
+            "treatment_value": "Contract_Two year",  # Exact column name after one-hot encoding
             "n_folds": 5
         },
+
 
         # 11. EXPLAINABILITY
         "explainability": {
