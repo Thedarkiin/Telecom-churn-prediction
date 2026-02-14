@@ -93,14 +93,15 @@ Beyond prediction, we simulated the effect of intervening.
 ```bash
 ├── 📁 src/
 │   ├── 📁 app/          # Flask Routes & API Logic
-│   ├── 📁 templates/    # HTML Frontend
-│   ├── 📁 static/       # CSS & JS Assets
+│   ├── 📁 templates/    # HTML Frontend (Interface)
+│   ├── 📁 static/       # CSS & JS Assets (App Stuff)
 │   ├── config.py       # Global Configuration (Paths, Params)
 │   ├── training.py     # Model Logic (XGBoost, Optuna)
 │   ├── double_ml.py    # Causal Inference Logic
 │   └── ...             # Other modules (preprocessing, explainability)
 ├── 📁 data/            # Dataset (Telecom Churn)
 ├── 📁 results/         # Output Graphs & Metrics
+├── diagram.png         # Architecture Diagram
 ├── Dockerfile          # Production Container Setup
 ├── requirements.txt    # Python Dependencies
 ├── pipeline.py         # Main Entry Point for Training
