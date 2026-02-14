@@ -46,11 +46,13 @@ To solve this, I integrated **Double Machine Learning**, a State-of-the-Art caus
 ### 1. Model Performance (Test Set)
 I prioritized **Precision (>70%)** to ensure the business team trusts the alerts.
 
-| Model | Accuracy | Precision (Precision-Focused) | Recall (Coverage) | F1-Score |
+| Model | Accuracy | Precision | Recall (Optimized) | F1-Score |
 | :--- | :--- | :--- | :--- | :--- |
-| **XGBoost (Selected)** | **80.8%** | **70.9%** | 46.8% | 0.56 |
+| **XGBoost** | 80.8% | 70.9% | 46.8% | 0.56 |
 | Ensemble | 80.8% | 68.6% | 50.8% | 0.58 |
 | Logistic Regression | 79.8% | 64.8% | 52.7% | 0.58 |
+
+> **Note**: These metrics reflect the model's performance when optimized for **Recall** (catching as many churners as possible), which naturally trades off some Precision.
 
 > **Selected Model**: XGBoost was deployed because it met the strict business requirement of >70% Precision.
 
