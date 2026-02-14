@@ -506,8 +506,156 @@ td {
 .intervention-box {
     background: #F8FAFC;
     border-left: 3px solid var(--text-primary);
-    /* Minimal black border */
     padding: 1rem;
     font-size: 0.95rem;
     color: var(--text-primary);
+}
+
+/* --- Premium Insight Cards (No Emojis) --- */
+.risk-factors ul {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.risk-factors li {
+    padding: 0;
+    margin: 0;
+}
+
+.risk-factors li::before {
+    content: none;
+}
+
+.insight-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    border-color: var(--accent-color);
+}
+
+.insight-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+}
+
+/* CSS-based Icons (Abstract Shapes) */
+.icon-shape {
+    width: 24px;
+    height: 24px;
+    background: #EFF6FF;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-shape::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent-color);
+    border-radius: 50%;
+}
+
+.insight-action {
+    font-size: 0.85rem;
+    color: var(--accent-color);
+    background: #EFF6FF;
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+/* --- Monitor Tab --- */
+.monitor-card {
+    min-height: 600px;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.alert-box {
+    background: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    color: #B91C1C;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.alert-box.hidden {
+    display: none;
+}
+
+.chart-container {
+    position: relative;
+    height: 400px;
+    width: 100%;
+    margin-bottom: 2rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.stat-item {
+    background: #F9FAFB;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 0.25rem;
+}
+
+.stat-badge {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.stat-badge.normal {
+    background: #D1FAE5;
+    color: #047857;
+}
+
+.stat-badge.drift {
+    background: #FEE2E2;
+    color: #B91C1C;
 }

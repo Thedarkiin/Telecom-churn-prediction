@@ -6,9 +6,7 @@ Complete ML pipeline with:
 - Optuna hyperparameter optimization
 - Stratified K-fold cross-validation
 - Class balancing
-- Monte Carlo uncertainty quantification
 - Optimal threshold selection
-- SHAP/LIME explainability
 - Double ML causal inference
 - Odds ratio validation
 """
@@ -117,16 +115,21 @@ def main():
     # Save Feature Names
     joblib.dump(feature_names, 'models/feature_names.pkl')
     logger.info(f"Saved feature names to models/feature_names.pkl")
+
+    # Stats now saved in preprocessing.py for consistency (Raw Data)
     
-    # Save Best Model (XGBoost)
-    if "xgboost" in models:
-        joblib.dump(models["xgboost"], 'models/xgboost_model.pkl')
-        logger.info(f"Saved XGBoost model to models/xgboost_model.pkl")
     
-    # Save Logistic Regression (for Double ML/Odds Ratios context)
+    # Save Models (Dynamic)
+    for name, model in models.items():
+        filename = f'models/{name}_model.pkl'
+        joblib.dump(model, filename)
+        logger.info(f"Saved {name} to {filename}")
+        
+    # Save Logistic Regression specifically if needed for legacy lookups (though dynamic covers it)
     if "logistic_regression" in models:
+        # Create symlink or just rely on dynamic name 'logistic_regression_model.pkl'
+        # App might expect 'lr_model.pkl' - let's keep compatibility or update app
         joblib.dump(models["logistic_regression"], 'models/lr_model.pkl')
-        logger.info(f"Saved LR model to models/lr_model.pkl")
 
     
     # 4. EVALUATION - Recall-optimized thresholds

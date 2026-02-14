@@ -7,6 +7,7 @@
     <title>Retention System v2 | Enterprise Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 </head>
 
 <body>
@@ -25,6 +26,7 @@
                 <button class="nav-btn" data-tab="history">
                     <span class="icon">Session History</span>
                 </button>
+
             </nav>
 
             <div class="spacer"></div>
@@ -121,6 +123,17 @@
                         <p>Drag & Drop CSV here or Click to Browse</p>
                         <input type="file" id="fileInput" accept=".csv" hidden>
                     </div>
+
+                    <div class="csv-guide">
+                        <h4>Expected CSV Format</h4>
+                        <p>Columns needed: <code>tenure</code>, <code>MonthlyCharges</code>, <code>TotalCharges</code>,
+                            <code>Contract</code>, <code>PaymentMethod</code>, <code>InternetService</code>,
+                            <code>SeniorCitizen</code>.
+                        </p>
+                        <a href="/active_template" class="text-link" download="churn_template.csv">Download Sample
+                            Template</a>
+                    </div>
+
                     <div id="uploadStatus" class="status-msg"></div>
                 </div>
             </section>
@@ -150,6 +163,8 @@
                     </div>
                 </div>
             </section>
+
+
 
         </main>
 

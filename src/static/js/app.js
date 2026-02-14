@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target === 'history') {
                 loadHistory();
             }
+
         });
     });
 
@@ -88,26 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
             badge.style.color = '#047857';
         }
 
-        // Factors
-        const list = document.getElementById('factorsList');
-        list.innerHTML = '';
-        if (data.causal_insights && data.causal_insights.length > 0) {
-            data.causal_insights.forEach(insight => {
-                const li = document.createElement('li');
-                // insight is now an object {description, action}
-                li.innerHTML = `
-                    <div style="margin-bottom:0.5rem;">
-                        ${insight.description}
-                        <div style="font-size:0.85rem; color:#2563EB; margin-top:0.2rem;">
-                            💡 <strong>Strategy:</strong> ${insight.action}
-                        </div>
-                    </div>
-                `;
-                list.appendChild(li);
-            });
-        } else {
-            list.innerHTML = '<li>No specific risk factors identified.</li>';
-        }
+        // Factors (Premium UI)
+        updateInsightUI(data);
     }
 
     closeResult.addEventListener('click', () => {
@@ -229,3 +212,28 @@ document.addEventListener('DOMContentLoaded', () => {
         psyOverlay.addEventListener('click', () => togglePanel(false));
     }
 });
+
+// Helper for Premium Insight Cards
+function updateInsightUI(data) {
+    const list = document.getElementById('factorsList');
+    list.innerHTML = '';
+
+    if (data.causal_insights && data.causal_insights.length > 0) {
+        data.causal_insights.forEach(insight => {
+            const card = document.createElement('div');
+            card.className = 'insight-card';
+            card.innerHTML = `
+                <div class="insight-header">
+                    <div class="icon-shape"></div>
+                    <span>${insight.description}</span>
+                </div>
+                <div class="insight-action">
+                    ACTION: ${insight.action}
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    } else {
+        list.innerHTML = '<div style="color:#6B7280; font-style:italic;">No specific risk factors identified.</div>';
+    }
+}
