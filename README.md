@@ -26,23 +26,36 @@ The goal is to provide a robust **Decision Support System** for business stakeho
 
 ## 🏗️ Architecture
 
-### 1. The Statistical Foundations (INSEA)
+### 1. The Architecture
+![System Architecture](diagram.png)
+*Figure 1: High-Level System Design (Pipeline -> Model -> API -> Web UI)*
+
+### 2. The Statistical Foundations (INSEA)
 The journey began with the fundamentals of statistics. Before jumping to complex black boxes, I pushed **Logistic Regression** to its limits.
 *   **Feature Engineering**: Rigorous selection of the most informative variables.
 *   **Hyperparameter Tuning**: Ensuring the linear boundaries were optimal using cross-validation.
 *   **Odds Ratios**: Validating the statistical impact of each feature.
 
-### 2. State-of-the-Art (XGBoost + Optuna)
+### 3. State-of-the-Art (XGBoost + Optuna)
 While Logistic Regression provides interpretability, production systems demand peak performance. I transitioned to **XGBoost**, the current industry standard for tabular data.
 *   **Bayesian Optimization**: Used **Optuna** to "cook" the hyperparameters, searching through hundreds of combinations to find the global optimum.
 *   **Result**: A highly calibrated model that maximizes **Precision (>70%)** while maintaining robust Recall.
 
-### 3. The Causal Leap: DoubleML (SOTA Causal ML)
+### 4. The Causal Leap: DoubleML (SOTA Causal ML)
 Standard ML asks: *"Attributes X and Y are correlated, so X predicts Y."*  
 **The Problem**: Ice cream sales correlate with shark attacks. But banning ice cream won't stop sharks—they both just happen during **Summer**.  
 In the same way, we need the *causal reason* why Customer A churned, not just a correlation.
 
 To solve this, I integrated **Double Machine Learning**, a State-of-the-Art causal inference framework. This strips away the confounders (the "Summer") to identify the **Average Treatment Effect (ATE)**—the pure causal impact of a feature (like "2-Year Contract") on churn.
+
+---
+
+## 💻 The Interface (Web App)
+The system concludes with a user-friendly **Flask Web Application**, allowing non-technical stakeholders to interact with the model.
+
+*   **Real-time Prediction**: Input customer data (Tenure, Contract, etc.) and get an instant Churn Probability.
+*   **Risk Factors**: The app highlights *why* a customer is at risk (e.g., "Fiber Optic Interest" or "High Monthly Charges").
+*   **Visual Confidence**: Color-coded badges (Green/Red) indicate the safety level.
 
 ---
 
@@ -62,20 +75,23 @@ I prioritized **Precision (>70%)** to ensure the business team trusts the alerts
 > **Selected Model**: The **Ensemble** is now a true "Heavy Hitter", delivering the highest F1-Score (0.64) in the project's history.
 
 ![ROC Curve](results/metrics/ensemble_roc_curve.png)
-*Figure 1: Ensemble ROC Curve (AUC = 0.85)*
+*Figure 2: Ensemble ROC Curve (AUC = 0.85). The curve hugs the top-left corner, indicating a strong ability to distinguish between Churners and Non-Churners across all thresholds.*
 
 ### 2. Feature Importance (SHAP)
 Unlocking the "Black Box" to understand drivers of churn.
 
 ![Feature Importance](results/explainability/shap_summary_beeswarm.png)
-*Figure 2: SHAP Beeswarm Plot - Highlighting the content and direction of risk factors.*
+*Figure 3: SHAP Beeswarm Plot. Unlike a simple bar chart, this reveals directionality:*
+*   **High Values (Red)** of `Fiber Optic` push risk **UP** (to the right).
+*   **High Values (Red)** of `Tenure` push risk **DOWN** (to the left).
+*   **Contract_TwoYear** is a massive protective factor (Blue dots far left).
 
 ### 3. Causal Findings (DoubleML)
 Beyond prediction, we simulated the effect of intervening.
 
 | Intervention | Causal Effect (ATE) | Impact Description |
 | :--- | :--- | :--- |
-| **Switch to 2-Year Contract** | **-12.6%** | Reduces churn probability by ~13 points on average. |
+| **Switch to 2-Year Contract** | **-12.6%** | **Interpretation**: If we force a user to switch to a 2-Year Contract, we *causally* reduce their churn probability by ~13 percentage points. This is actionable strategy, not just prediction. |
 
 ---
 

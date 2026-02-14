@@ -54,17 +54,19 @@ class Config:
         "feature_engineering": {
             # Interaction terms (non-additive effects)
             "interaction_pairs": [
-                ["tenure", "MonthlyCharges"]  # Capture Customer Lifetime Value
+                ["tenure", "MonthlyCharges"],  # Capture Customer Lifetime Value
+                ["Contract", "InternetService"], # Contract type vs Service
+                ["TechSupport", "OnlineSecurity"] # Support bundle
             ],
             # Discretization for non-linear patterns
             "binning": {
                 "columns": ["tenure", "MonthlyCharges"],
-                "n_bins": 4,
-                "strategy": "quantile"  # Equal frequency bins
+                "n_bins": 5,
+                "strategy": "quantile"
             },
-            # Polynomial features (DISABLED - user preference)
+            # Polynomial features (ENABLED to boost metrics)
             "polynomial": {
-                "enabled": False,  # Disabled per user request
+                "enabled": True, 
                 "columns": ["tenure", "MonthlyCharges", "TotalCharges"],
                 "degree": 2
             },
