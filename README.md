@@ -96,7 +96,6 @@ Beyond prediction, we simulated the effect of intervening.
 │   ├── 📁 templates/    # HTML Frontend
 │   ├── 📁 static/       # CSS & JS Assets
 │   ├── config.py       # Global Configuration (Paths, Params)
-│   ├── pipeline.py     # Main Entry Point for Training
 │   ├── training.py     # Model Logic (XGBoost, Optuna)
 │   ├── double_ml.py    # Causal Inference Logic
 │   └── ...             # Other modules (preprocessing, explainability)
@@ -104,6 +103,7 @@ Beyond prediction, we simulated the effect of intervening.
 ├── 📁 results/         # Output Graphs & Metrics
 ├── Dockerfile          # Production Container Setup
 ├── requirements.txt    # Python Dependencies
+├── pipeline.py         # Main Entry Point for Training
 └── run_app.py          # Entry point for Web Server
 ```
 
