@@ -12,10 +12,15 @@
 
 ---
 
-## 📖 Project Philosophy: "Level 3" by my standards ( it means one level closer to production / level 1 means a jupyter notebook :\ )
-For this project i aimed to mimic a production level workflow. Lacking a massive enterprise data warehouse, I focused on **"stealing the ideas"** behind production systems—rigor, modularity, and causality—to build a solution that goes beyond simple prediction.
+## 📖 Project Philosophy: Level 3 Engineering
+**Objective**: Construct a production-grade Churn Prediction System that transcends simple notebook experimentation.
 
-The goal was not just to build a model, but to build a **System** that an imaginary Business Intelligence team could actually use to make decisions.
+Unlike typical "Level 1" data science projects (static Jupyter Notebooks), this system is engineered for **real-world deployment**. It prioritizes:
+1.  **Causality over Correlation**: Using DoubleML to understand *why* users churn, not just *who*.
+2.  **Modularity**: A decoupled architecture (Training Pipeline vs. Inference API).
+3.  **Reproducibility**: Dockerized environments ensuring identical behavior across development and production.
+
+The goal is to provide a robust **Decision Support System** for business stakeholders, not just a predictive model.
 
 ---
 
@@ -48,13 +53,13 @@ I prioritized **Precision (>70%)** to ensure the business team trusts the alerts
 
 | Model | Accuracy | Precision | Recall | F1-Score |
 | :--- | :--- | :--- | :--- | :--- |
-| **Ensemble (Winner)** | **78.2%** | **57.7%** | **66.8%** | **0.62** |
-| XGBoost | 77.7% | 56.8% | 66.6% | 0.61 |
+| **Ensemble (SOTA)** | **78.0%** | **57.2%** | **71.9%** | **0.64** |
+| XGBoost | 77.5% | 56.4% | 71.8% | 0.63 |
 | Logistic Regression | 78.8% | 59.5% | 62.8% | 0.61 |
 
-> **Note**: We optimized for **F1-Score** (Balance) to get the "Best of Both Worlds". This provides a solid 67% Recall (catching 2/3rds of churners) while maintaining ~58% Precision.
+> **Note**: By enabling **Polynomial Feature Expansion** and **Interaction Terms** (e.g., `Tenure * MonthlyCharges`), we unlocked a massive boost in Recall (**72%**), catching nearly 3 out of 4 churners while keeping Precision stable.
 
-> **Selected Model**: The **Ensemble** (XGBoost + Logistic Regression) is now the deployed model as it achieves the highest overall stability.
+> **Selected Model**: The **Ensemble** is now a true "Heavy Hitter", delivering the highest F1-Score (0.64) in the project's history.
 
 ### 2. Feature Importance (SHAP)
 Unlocking the "Black Box" to understand drivers of churn.
@@ -73,8 +78,6 @@ Beyond prediction, we simulated the effect of intervening.
 *Figure 2: XGBoost ROC Curve (AUC = 0.85)*
 
 ---
-
-## 🛠️ Technical Stack
 
 ## 🛠️ Technical Stack
 *   **Causal Inference**: Double Machine Learning (DoubleML)
