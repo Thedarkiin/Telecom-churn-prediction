@@ -102,7 +102,7 @@ class Config:
             "cv_splits": 5,
             # XGBoost Search Space (Optuna)
             "xgboost": {
-                "n_trials": 20,
+                "n_trials": 10,
                 "param_space": {
                     "max_depth": {"type": "int", "low": 3, "high": 9},
                     "learning_rate": {"type": "loguniform", "low": 0.01, "high": 0.3},

@@ -141,36 +141,18 @@ def find_optimal_threshold(model, X_val, y_val, metric='f1', beta=1.0):
     best_f05_threshold = 0.5
     best_f05_score = -1
     
+    # Strategy: Maximize F1-Score (Balanced Precision/Recall)
     for threshold in search_range:
         y_pred = (probs >= threshold).astype(int)
         
-        p = precision_score(y_val, y_pred, zero_division=0)
-        r = recall_score(y_val, y_pred, zero_division=0)
-        
-        # Calculate F0.5 (Precision holds 2x weight of Recall)
-        if (0.25 * p) + r == 0:
-            f05 = 0
-        else:
-            f05 = (1 + 0.25) * (p * r) / ((0.25 * p) + r)
+        f1 = f1_score(y_val, y_pred, zero_division=0)
             
-        if f05 > best_f05_score:
-            best_f05_score = f05
-            best_f05_threshold = threshold
+        if f1 > best_score:
+            best_score = f1
+            best_threshold = threshold
             
-        # Target: All > 0.7
-        if p > 0.65 and r > 0.65: # Relax slightly to find candidate
-             # Select based on raising Precision since that's the weak point
-             if p > best_score:
-                 best_score = p
-                 best_threshold = threshold
-
-    # If we found a balanced candidate, use it
-    if best_score > -1:
-        logger.info(f"Target met (P>0.65, R>0.65). Selected threshold: {best_threshold:.3f} (Max Precision in zone)")
-        return best_threshold, best_score
-    else:
-        logger.info(f"Target not strictly met. Fallback to F0.5 optimization. Threshold: {best_f05_threshold:.3f}")
-        return best_f05_threshold, best_f05_score
+    logger.info(f"Selected Threshold: {best_threshold:.3f} (Max F1: {best_score:.4f})")
+    return best_threshold, best_score
 
 
 def train_logistic_cv(X_train, y_train, config):

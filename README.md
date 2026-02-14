@@ -46,15 +46,15 @@ To solve this, I integrated **Double Machine Learning**, a State-of-the-Art caus
 ### 1. Model Performance (Test Set)
 I prioritized **Precision (>70%)** to ensure the business team trusts the alerts.
 
-| Model | Accuracy | Precision | Recall (Optimized) | F1-Score |
+| Model | Accuracy | Precision | Recall | F1-Score |
 | :--- | :--- | :--- | :--- | :--- |
-| **XGBoost** | 80.8% | 70.9% | 46.8% | 0.56 |
-| Ensemble | 80.8% | 68.6% | 50.8% | 0.58 |
-| Logistic Regression | 79.8% | 64.8% | 52.7% | 0.58 |
+| **Ensemble (Winner)** | **78.2%** | **57.7%** | **66.8%** | **0.62** |
+| XGBoost | 77.7% | 56.8% | 66.6% | 0.61 |
+| Logistic Regression | 78.8% | 59.5% | 62.8% | 0.61 |
 
-> **Note**: These metrics reflect the model's performance when optimized for **Recall** (catching as many churners as possible), which naturally trades off some Precision.
+> **Note**: We optimized for **F1-Score** (Balance) to get the "Best of Both Worlds". This provides a solid 67% Recall (catching 2/3rds of churners) while maintaining ~58% Precision.
 
-> **Selected Model**: XGBoost was deployed because it met the strict business requirement of >70% Precision.
+> **Selected Model**: The **Ensemble** (XGBoost + Logistic Regression) is now the deployed model as it achieves the highest overall stability.
 
 ### 2. Feature Importance (SHAP)
 Unlocking the "Black Box" to understand drivers of churn.

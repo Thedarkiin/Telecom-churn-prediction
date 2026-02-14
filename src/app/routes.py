@@ -20,12 +20,12 @@ class ModelLoader:
             cls._instance = ModelLoader()
             try:
                 # Load Unified Artifacts
-                if os.path.exists('models/xgboost_model.pkl'):
-                    cls._model = joblib.load('models/xgboost_model.pkl')
-                    print("Loaded XGBoost Model (Best Precision)")
-                elif os.path.exists('models/ensemble_model.pkl'):
+                if os.path.exists('models/ensemble_model.pkl'):
                     cls._model = joblib.load('models/ensemble_model.pkl')
-                    print("Loaded Ensemble Model")
+                    print("Loaded Ensemble Model (Best Balanced)")
+                elif os.path.exists('models/xgboost_model.pkl'):
+                    cls._model = joblib.load('models/xgboost_model.pkl')
+                    print("Loaded XGBoost Model")
                 
                 if os.path.exists('models/preprocessor.pkl'):
                     cls._preprocessor = joblib.load('models/preprocessor.pkl') 

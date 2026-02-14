@@ -1,6 +1,6 @@
 # 📘 Codebase Deep Dive: Retention System v2
 
-This document provides a comprehensive, file-by-file explanation of the entire Retention System. It is designed to act as a "developer's manual" so you can understand every line of logic, from the statistical foundations to the production deployment configuration.
+This document provides a comprehensive, file-by-file explanation of the entire Retention System. It is designed to act as a "developer's manual" so you can understand every line of logic.
 
 ---
 
@@ -8,163 +8,128 @@ This document provides a comprehensive, file-by-file explanation of the entire R
 
 ### 1. `pipeline.py`
 **Role:** The "Conductor" of the Machine Learning Orchestra.
-This is the master script that runs the entire training process from start to finish. It doesn't serve the web app; it builds the intelligence.
-
-*   **Key Functions:**
-    *   `main()`: The entry point. It calls `preprocess_data`, `train_models`, `evaluate`, etc. sequentially.
-    *   `clear_results()`: A utility to wipe the `results/` folder clean before a new run, ensuring no stale data remains.
-*   **Logic Flow:**
-    1.  **Preprocessing**: Clean data and handle missing values.
-    2.  **Validation**: Check assumptions (e.g., "Are these variables actually linear?").
-    3.  **Training**: Run XGBoost with Optuna to find the best model.
-    4.  **Threshold Optimization**: Find the probability cutoff (e.g., 52%) that balances Precision and Recall.
-    5.  **Causal Analysis**: Run DoubleML to find which features *cause* churn, not just predict it.
-    6.  **Saving**: Dump the trained models (`.pkl` files) into `models/`.
+*   **Purpose**: Runs the entire pipeline: Data Loading -> Preprocessing -> Training (XGBoost/Optuna) -> Evaluation -> Causal Analysis.
+*   **Key Logic**: It orchestrates the flow. It uses `src.config` to decide *how* to run (e.g., which columns to drop) and calls functions from `src.training` and `src.double_ml`.
 
 ### 2. `run_app.py`
 **Role:** The Web Server Entrance.
-This is a tiny script that acts as the "ignition key" for the Flask web application.
-*   **Logic:** It imports the `create_app` function from `src.app` and runs it on `0.0.0.0` (accessible to the outside world, not just localhost) on port 5000. It's kept simple on purpose to separate "running" from "logic".
+*   **Purpose**: Starts the Flask application.
+*   **Code**: `create_app().run(host='0.0.0.0', port=5000)`. simpler is better here.
 
 ### 3. `Dockerfile`
 **Role:** The Production Envelope.
-This file creates a self-contained "virtual computer" (container) that holds your app.
-*   **Line-by-Line Breakdown:**
-    *   `FROM python:3.12-slim`: Starts with a minimal Python Linux installation.
-    *   `WORKDIR /app`: Sets the working folder inside the container.
-    *   `COPY . /app`: Copies your code from Windows into the Linux container.
-    *   `RUN pip install...`: Installs all libraries listed in `requirements.txt`.
-    *   `EXPOSE 5000`: Opens port 5000 so the world can talk to the Flask app.
-    *   `CMD ["python", "run_app.py"]`: The command that runs when the container starts.
+*   **Purpose**: Wraps the Python code into a Linux container.
+*   **Details**:
+    *   `FROM python:3.12-slim`: Base image.
+    *   `COPY . /app`: Moves code to container.
+    *   `RUN pip install`: Installs dependencies.
+    *   `CMD`: Explicitly runs `python run_app.py`.
 
 ### 4. `docker-compose.yml`
 **Role:** The Service Manager.
-While `Dockerfile` builds the image, `docker-compose` runs it. It's like a configuration file for the runtime.
-*   **Key Settings:**
-    *   `volumes`: Maps your local `models/` folder to the container. This means if you re-train a model locally, the Docker app sees it instantly without rebuilding.
-    *   `ports`: Connects your Windows port 5000 to the Container's port 5000.
+*   **Purpose**: Runs the Docker container with specific configurations.
+*   **Key Configuration**:
+    *   `volumes: - ./models:/app/models`: **Crucial**. This maps your local `models` folder to the container. If you re-train the model locally, the potentially running Docker container sees the update immediately (if restart policy allows) or upon restart, without needing a full `docker build`.
+    *   `ports: - "5000:5000"`: Exposes the internal web server to your `localhost:5000`.
 
 ### 5. `requirements.txt`
 **Role:** The Ingredient List.
-Lists every Python library needed.
-*   `flask`: Web framework.
-*   `xgboost`: The gradient boosting machine learning library.
-*   `optuna`: The hyperparameter optimization engine.
-*   `shap`: Game-theoretic explainability.
-*   `DoubleML`: Causal inference library.
+*   **Purpose**: Lists all dependencies (`flask`, `xgboost`, `optuna`, `shap`, `DoubleML`, `scikit-learn`, `pandas`, `numpy`).
+
+### 6. `diagram.png`
+**Role:** Visual Architecture.
+*   **Purpose**: A high-level visual representation of the system architecture.
+*   **Content**: Shows the flow from Raw Data -> Preprocessing -> Model Training -> API Serving -> End User. It illustrates how the "Offline Training" pipeline feeds into the "Online Serving" application.
+
+### 7. `ARCHITECTURE.html`
+**Role:** Interactive Architecture.
+*   **Purpose**: An interactive HTML version of the system design, often generated for presentations or documentation sites.
 
 ---
 
 ## 📁 src/: The Core Logic
 
-### 6. `src/config.py`
+### 8. `src/config.py`
 **Role:** The Central Control Room.
-Instead of hard-coding numbers like "0.2" or "42" throughout the code, we put them here.
-*   **Key Sections:**
-    *   `PIPELINE_CONFIG`: A massive dictionary controlling the ML behavior.
-    *   `param_space`: Defines the range of values Optuna is allowed to search (e.g., "Try tree depths between 3 and 9").
-    *   `threshold`: Defines the target metric (Precision/Recall). changing this one value changes how the model makes decisions globally.
+*   **Purpose**: Stores all "Magic Numbers" and configurations.
+*   **Key Configs**:
+    *   `PIPELINE_CONFIG`: Dictionary controlling the entire ML process.
+    *   `xgboost.n_trials`: Controls how many Optuna trials to run.
+    *   `threshold.metric`: Determines if we optimize for Precision, Recall, or F1.
 
-### 7. `src/preprocessing.py`
+### 9. `src/preprocessing.py`
 **Role:** The Data Plumber.
-Raw data is dirty. This file cleans it.
 *   **Class `ChurnPreprocessor`**:
-    *   `fit()`: Learns from the training data (e.g., "What is the average tenure?").
-    *   `transform()`: Applies those learnings. Crucially, it fills missing values (Imputation) and converts text to numbers (Encoding).
-    *   **Logic**: It treats "Tenure" and "MonthlyCharges" as continuous numbers (scaled) and "Plan Type" as categories (One-Hot Encoded).
+    *   `fit()`: Learns encodings and imputation values from Training Data.
+    *   `transform()`: Applies them to Test/Production data.
+    *   **Logic**: Handles `Tenure` (Scaling), `Contract` (One-Hot Encoding), and `TotalCharges` (Imputation).
 
-### 8. `src/training.py`
+### 10. `src/training.py`
 **Role:** The Brain Builder.
-This is where the magic happens.
-*   **`train_xgboost_with_optuna()`**:
-    *   It starts a "Study".
-    *   It tries 20 different combinations of hyper-parameters (Learning Rate, Depth, etc.).
-    *   For each combination, it evaluates performance using Cross-Validation (training on 4 chunks, testing on 1).
-    *   It picks the winner and trains the final model.
-*   **`find_optimal_threshold()`**:
-    *   Most models output a probability (0.0 to 1.0).
-    *   Standard ML picks 0.5 as the cutoff.
-    *   This function scans 0.3, 0.31, 0.32... to find the cutoff that maximizes Precision (>70%), ensuring we don't spam innocent customers.
+*   **Functions**:
+    *   `train_xgboost_with_optuna()`: The heavy lifter. Runs a Bayesian Search to find the best hyperparameters.
+    *   `find_optimal_threshold()`: Scans probabilities to find the cutoff that maximizes F1-Score (Balance).
 
-### 9. `src/double_ml.py`
-**Role:** The Scientist.
-This file implements Causal Inference.
-*   **The Problem it Solves**: "Contract Type" predicts churn, but is it the contract itself, or the type of person who signs it?
-*   **How it works**:
-    1.  It builds a model to predict who signs a contract (Propensity).
-    2.  It builds a model to predict churn (Outcome).
-    3.  It subtracts the two to find the "Residual" — the pure causal effect remaining after removing bias.
-*   **Output**: An "Average Treatment Effect" (ATE). If ATE is -0.15, the contract *physically causes* a 15% drop in churn.
+### 11. `src/double_ml.py`
+**Role:** The Causal Scientist.
+*   **Purpose**: Uses the Double Machine Learning framework.
+*   **Logic**: Predicts `T` (Treatment) and `Y` (Outcome) separately, then correlates the residuals to find the true causal effect (ATE).
 
-### 10. `src/explainability.py`
+### 12. `src/explainability.py`
 **Role:** The Interpreter.
-Black-box models (like XGBoost) are hard to understand. This file uses SHAP (SHapley Additive exPlanations).
-*   **Logic**: It calculates how much each feature contributed to the prediction by simulating "what if this feature was missing?".
-*   **Output**: The beeswarm plots you see in `results/explainability/`.
+*   **Purpose**: Generates SHAP plots.
+*   **Logic**: Computes marginal contributions of features to the prediction.
 
-### 11. `src/evaluation.py`
-**Role:** The Scorekeeper.
-Generates the confusion matrices and ROC curves.
-*   It calculates Precision (Accuracy of positive predictions), Recall (Coverage of actual positives), and F1-Score (Harmonic mean).
+### 13. `src/evaluation.py`
+**Role:** The Auditor.
+*   **Purpose**: Calculates Accuracy, Precision, Recall, F1, and ROC-AUC. Generates the confusion matrix plots.
+
+### 14. `src/odds_ratio.py`
+**Role:** The Statistician (Legacy).
+*   **Purpose**: Calculates Odds Ratios from Logistic Regression for improved interpretability in the early stages of the project.
+
+### 15. `src/utils.py`
+**Role:** The Helper.
+*   **Purpose**: Shared utility functions like `setup_logger` to ensure consistent logging format across all files.
 
 ---
 
 ## 📁 src/app/: The Web Application
 
-### 12. `src/app/routes.py`
+### 16. `src/app/routes.py`
 **Role:** The Traffic Controller.
-Handles HTTP requests from the browser.
-*   **`@bp.route('/predict')`**:
-    1.  Receives JSON data from the frontend.
-    2.  Passes it to the `ModelLoader`.
-    3.  Returns the probability and the "Causal Insight" (e.g., "Nudge this user to a 2-year contract").
-*   **`ModelLoader` Class**: A Singleton that loads the heavy `.pkl` files once on startup, so we don't reload 500MB of models for every user request.
+*   **Purpose**: Defines API endpoints.
+*   **Endpoints**:
+    *   `GET /`: Serves the HTML page.
+    *   `POST /predict`: Accepts JSON, runs inference, returns JSON.
 
-### 13. `src/templates/index.html`
+### 17. `src/app/app.py`
+**Role:** The Factory.
+*   **Purpose**: Contains the `create_app()` function that initializes Flask and registers the Blueprints.
+
+### 18. `src/templates/index.html`
 **Role:** The Face.
-The HTML structure of the user interface.
-*   It uses a "Single Page Application" feel.
-*   **Key Elements**:
-    *   The Input Form (Left panel).
-    *   The Result Card (Right panel, initially hidden).
-    *   The "Compare" Slide-over (For the behavioral science nudges).
+*   **Purpose**: The actual UI structure.
+*   **Features**: Responsive form, hidden result section, "Compare" slider.
 
-### 14. `src/static/js/app.js`
+### 19. `src/static/js/app.js`
 **Role:** The Nervous System.
-Connects the HTML face to the Python brain.
-*   **`predict()` function**:
-    *   Grabs values from the HTML inputs.
-    *   Packages them into JSON.
-    *   Sends a `POST` request to `/predict`.
-    *   Waits for the answer.
-    *   Updates the DOM (Document Object Model) to show the "High Risk" red badge without reloading the page.
+*   **Purpose**: Handles user interaction.
+*   **Logic**: Listens for "Submit", serializes form data, calls API, updates DOM with results (Red/Green badge).
 
-### 15. `src/static/css/style.css`
+### 20. `src/static/css/style.css`
 **Role:** The Makeup.
-Makes it look Enterprise-grade.
-*   **Design System**:
-    *   Uses a restricted color palette (Enterprise Blue, Alert Red, Success Green).
-    *   **Glassmorphism**: The cards have a slight transparency and blur (`backdrop-filter: blur(10px)`).
-    *   **Flexbox/Grid**: Used for layout to ensure responsiveness on all screen sizes.
+*   **Purpose**: Styling.
+*   **Features**: Glassmorphism, CSS Variables for theme colors, Flexbox layouts.
 
 ---
 
-## 📁 results/: The Evidence
+## 📁 results/ & models/
 
-### 16. `results/metrics/all_metrics_combined.csv`
-**Role:** The Report Card.
-Contains the final scores of every model tried. This is what you checked to verify Precision > 70%.
+### 21. `results/`
+**Role:** The Output.
+*   Stores generated CSV reports (`metrics/`) and PNG charts (`explainability/`).
 
-### 17. `results/causal/double_ml_results.csv`
-**Role:** The scientific proof.
-Contains the raw ATE numbers and confidence intervals from the DoubleML analysis.
-
----
-
-## 📁 models/: The Artifacts
-
-### 18. `models/*.pkl`
-**Role:** The Frozen Brains.
-These are the serialized Python objects.
-*   `xgboost_model.pkl`: The trained XGBoost model.
-*   `preprocessor.pkl`: The exact rules used to clean the data (e.g., the mean value of "Tenure" used to fill N/A). It is CRITICAL this is saved, or the app wouldn't know how to process new data identically to the training data.
+### 22. `models/`
+**Role:** The Artifacts.
+*   Stores the trained `.pkl` files. `preprocessor.pkl` is the most critical file for ensuring production data matches training data structure.

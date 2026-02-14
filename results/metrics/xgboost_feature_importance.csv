@@ -1,26 +1,26 @@
 Feature,Importance
-Contract_Two year,0.22212191
-Contract_One year,0.12982874
-PaymentMethod_Electronic check,0.11295586
-InternetService_Fiber optic,0.06423599
-PaperlessBilling,0.0421587
-Dependents,0.039083418
-OnlineSecurity,0.034341544
-tenure_bin,0.03266425
-TechSupport,0.031653527
-StreamingMovies,0.029902015
-InternetService_No,0.027419029
-tenure,0.02735652
-Partner,0.025691139
-MultipleLines,0.022656389
-OnlineBackup,0.020378936
-SeniorCitizen,0.020349136
-StreamingTV,0.020076495
-TotalCharges,0.015720787
-PhoneService,0.014330114
-PaymentMethod_Credit card (automatic),0.014201942
-gender,0.0133475745
-MonthlyCharges,0.011432279
-DeviceProtection,0.011143875
-total_services,0.010732711
-PaymentMethod_Mailed check,0.0062171025
+Contract_Two year,0.20029719
+Contract_One year,0.11872826
+PaymentMethod_Electronic check,0.10638739
+InternetService_Fiber optic,0.069266774
+Dependents,0.047858804
+PaperlessBilling,0.044420917
+OnlineSecurity,0.043789122
+tenure_bin,0.037765633
+TechSupport,0.037208658
+StreamingMovies,0.035695598
+InternetService_No,0.03345987
+tenure,0.03086752
+MultipleLines,0.022939745
+PhoneService,0.02233258
+StreamingTV,0.021132065
+TotalCharges,0.018646233
+Partner,0.015031412
+OnlineBackup,0.01498517
+SeniorCitizen,0.014962024
+PaymentMethod_Mailed check,0.013641969
+PaymentMethod_Credit card (automatic),0.012253267
+total_services,0.011365598
+MonthlyCharges,0.01117853
+gender,0.008152218
+DeviceProtection,0.00763348
