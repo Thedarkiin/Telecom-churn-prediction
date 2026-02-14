@@ -12,8 +12,8 @@
 
 ---
 
-## 📖 Project Philosophy: "Level 3" Engineering
-This project was designed to mimic a high-stakes production workflow. Lacking a massive enterprise data warehouse, I focused on **"stealing the ideas"** behind production systems—rigor, modularity, and causality—to build a solution that goes beyond simple prediction.
+## 📖 Project Philosophy: "Level 3" by my standards ( it means one level closer to production / level 1 means a jupyter notebook :\ )
+For this project i aimed to mimic a production level workflow. Lacking a massive enterprise data warehouse, I focused on **"stealing the ideas"** behind production systems—rigor, modularity, and causality—to build a solution that goes beyond simple prediction.
 
 The goal was not just to build a model, but to build a **System** that an imaginary Business Intelligence team could actually use to make decisions.
 
@@ -22,7 +22,7 @@ The goal was not just to build a model, but to build a **System** that an imagin
 ## 🏗️ Architecture
 
 ### 1. The Statistical Foundations (INSEA)
-The journey began with the fundamentals of statistics. Before jumping to complex black boxes, I pushed **Logistic Regression** to its absolute limit.
+The journey began with the fundamentals of statistics. Before jumping to complex black boxes, I pushed **Logistic Regression** to its limits.
 *   **Feature Engineering**: Rigorous selection of the most informative variables.
 *   **Hyperparameter Tuning**: Ensuring the linear boundaries were optimal using cross-validation.
 *   **Odds Ratios**: Validating the statistical impact of each feature.
@@ -32,13 +32,47 @@ While Logistic Regression provides interpretability, production systems demand p
 *   **Bayesian Optimization**: Used **Optuna** to "cook" the hyperparameters, searching through hundreds of combinations to find the global optimum.
 *   **Result**: A highly calibrated model that maximizes **Precision (>70%)** while maintaining robust Recall.
 
-### 3. The Causal Leap: DoubleML
+### 3. The Causal Leap: DoubleML (SOTA Causal ML)
 Standard ML asks: *"Attributes X and Y are correlated, so X predicts Y."*  
-**Problem**: Ice cream sales correlate with shark attacks. Banning ice cream won't stop sharks.
+**The Problem**: Ice cream sales correlate with shark attacks. But banning ice cream won't stop sharks—they both just happen during **Summer**.  
+In the same way, we need the *causal reason* why Customer A churned, not just a correlation.
 
-To solve this, I integrated **Double Machine Learning**, a State-of-the-Art causal inference framework. This strips away the noise to identify the **Average Treatment Effect (ATE)**—the actual causal impact of a feature (like "2-Year Contract") on churn.
+To solve this, I integrated **Double Machine Learning**, a State-of-the-Art causal inference framework. This strips away the confounders (the "Summer") to identify the **Average Treatment Effect (ATE)**—the pure causal impact of a feature (like "2-Year Contract") on churn.
 
 ---
+
+## 📊 Performance & Insights
+
+### 1. Model Performance (Test Set)
+I prioritized **Precision (>70%)** to ensure the business team trusts the alerts.
+
+| Model | Accuracy | Precision (Precision-Focused) | Recall (Coverage) | F1-Score |
+| :--- | :--- | :--- | :--- | :--- |
+| **XGBoost (Selected)** | **80.8%** | **70.9%** | 46.8% | 0.56 |
+| Ensemble | 80.8% | 68.6% | 50.8% | 0.58 |
+| Logistic Regression | 79.8% | 64.8% | 52.7% | 0.58 |
+
+> **Selected Model**: XGBoost was deployed because it met the strict business requirement of >70% Precision.
+
+### 2. Feature Importance (SHAP)
+Unlocking the "Black Box" to understand drivers of churn.
+
+![Feature Importance](results/explainability/shap_summary_bar.png)
+*Figure 1: Fiber Optic internet is the #1 driver of churn, followed by short-term contracts.*
+
+### 3. Causal Findings (DoubleML)
+Beyond prediction, we simulated the effect of intervening.
+
+| Intervention | Causal Effect (ATE) | Impact Description |
+| :--- | :--- | :--- |
+| **Switch to 2-Year Contract** | **-12.6%** | Reduces churn probability by ~13 points on average. |
+
+![ROC Curve](results/metrics/xgboost_roc_curve.png)
+*Figure 2: XGBoost ROC Curve (AUC = 0.85)*
+
+---
+
+## 🛠️ Technical Stack
 
 ## 🛠️ Technical Stack
 *   **Causal Inference**: Double Machine Learning (DoubleML)
