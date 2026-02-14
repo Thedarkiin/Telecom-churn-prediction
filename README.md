@@ -61,11 +61,14 @@ I prioritized **Precision (>70%)** to ensure the business team trusts the alerts
 
 > **Selected Model**: The **Ensemble** is now a true "Heavy Hitter", delivering the highest F1-Score (0.64) in the project's history.
 
+![ROC Curve](results/metrics/ensemble_roc_curve.png)
+*Figure 1: Ensemble ROC Curve (AUC = 0.85)*
+
 ### 2. Feature Importance (SHAP)
 Unlocking the "Black Box" to understand drivers of churn.
 
-![Feature Importance](results/explainability/shap_summary_bar.png)
-*Figure 1: Fiber Optic internet is the #1 driver of churn, followed by short-term contracts.*
+![Feature Importance](results/explainability/shap_summary_beeswarm.png)
+*Figure 2: SHAP Beeswarm Plot - Highlighting the content and direction of risk factors.*
 
 ### 3. Causal Findings (DoubleML)
 Beyond prediction, we simulated the effect of intervening.
@@ -73,9 +76,6 @@ Beyond prediction, we simulated the effect of intervening.
 | Intervention | Causal Effect (ATE) | Impact Description |
 | :--- | :--- | :--- |
 | **Switch to 2-Year Contract** | **-12.6%** | Reduces churn probability by ~13 points on average. |
-
-![ROC Curve](results/metrics/xgboost_roc_curve.png)
-*Figure 2: XGBoost ROC Curve (AUC = 0.85)*
 
 ---
 
