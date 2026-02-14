@@ -81,10 +81,10 @@ I prioritized **Precision (>70%)** to ensure the business team trusts the alerts
 Unlocking the "Black Box" to understand drivers of churn.
 
 ![Feature Importance](results/explainability/shap_summary_beeswarm.png)
-*Figure 3: SHAP Beeswarm Plot. Unlike a simple bar chart, this reveals directionality:*
-*   **High Values (Red)** of `Fiber Optic` push risk **UP** (to the right).
-*   **High Values (Red)** of `Tenure` push risk **DOWN** (to the left).
-*   **Contract_TwoYear** is a massive protective factor (Blue dots far left).
+*Figure 3: SHAP Beeswarm Plot - Highlighting the content and direction of risk factors.*
+*   **Fiber Optic Internet**: Strongly associated with **higher churn risk**.
+*   **Tenure**: Long-term customers are significantly **safer** (lower risk).
+*   **Two-Year Contracts**: Acts as a major stability factor, drastically reducing the likelihood of churn.
 
 ### 3. Causal Findings (DoubleML)
 Beyond prediction, we simulated the effect of intervening.
