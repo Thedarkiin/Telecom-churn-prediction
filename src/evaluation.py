@@ -301,6 +301,16 @@ def evaluate_models(models, X_test, y_test, optimal_thresholds=None, feature_nam
     
     # Save all metrics
     dfm = pd.DataFrame(all_metrics)
+    
+    # Add Git Hash
+    try:
+        import subprocess
+        git_hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).strip().decode('utf-8')
+        dfm['git_hash'] = git_hash
+    except Exception as e:
+        logger.warning(f"Could not retrieve git hash: {e}")
+        dfm['git_hash'] = "unknown"
+        
     dfm.to_csv(os.path.join(Config.METRICS_PATH, "all_metrics.csv"), index=False)
     logger.info("Saved all metrics to all_metrics.csv")
     
