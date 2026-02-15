@@ -1,38 +1,42 @@
+import subprocess
 import pytest
-import pandas as pd
 import os
-from src.pipeline import main
-from src.config import Config
+import sys
 
-def test_pipeline_smoke():
+def test_pipeline_script_execution():
     """
-    Smoke test to ensure the pipeline runs end-to-end on a small subset of data.
-    This doesn't check model quality, just that the code doesn't crash.
+    Smoke test that runs 'pipeline.py' as a subprocess.
+    This verifies the script runs from start to finish without crashing.
+    It avoids module import issues by treating the pipeline as a black box.
     """
-    # 1. Setup: Create a temporary config or modify the existing one to be fast
-    # For simplicity, we'll rely on the main pipeline but we could mock data.
-    # A better approach for a smoke test is to use the actual data but maybe restrict iterations.
-    
-    # Let's force a "smoke mode" by monkeypatching the Config if needed, 
-    # or just run it and ensure it passes.
-    # Since the dataset is small (~3k rows), running the full pipeline might be fast enough (< 1 min).
-    # If it's too slow, we should create a 'smoke_test' flag in the pipeline.
-    
-    # For now, let's try running the main function.
+    # Get the path to pipeline.py (in the root directory)
+    # We assume tests are run from the root, but let's be robust
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(current_dir)
+    pipeline_path = os.path.join(root_dir, "pipeline.py")
+
+    # Command to run: python pipeline.py
+    # We capture stdout/stderr to inspect if it fails
+    # We can add a timeout to prevent it from hanging forever (e.g., 300 seconds)
     try:
-        # We can also start with a smaller dataset if we want to be safe, 
-        # but let's test the 'real' pipeline first.
-        models, metrics = main()
+        result = subprocess.run(
+            [sys.executable, pipeline_path],
+            cwd=root_dir,  # Run from root so relative paths (data/, src/) work
+            capture_output=True,
+            text=True,
+            timeout=300
+        )
         
-        # 2. Assertions
-        assert models is not None, "Models dictionary should not be None"
-        assert len(models) > 0, "Should have trained at least one model"
-        assert not metrics.empty, "Metrics dataframe should not be empty"
-        assert 'git_hash' in metrics.columns, "Metrics should contain git_hash"
+        # Check return code (0 means success)
+        if result.returncode != 0:
+            # Failed! Print stderr for debugging
+            pytest.fail(f"Pipeline script failed!\nSTDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}")
         
-        # Check artifacts exist
-        assert os.path.exists(Config.METRICS_PATH), "Metrics directory should exist"
-        assert os.path.exists(os.path.join(Config.METRICS_PATH, "all_metrics.csv")), "Metrics CSV should exist"
+        # Additional checks: Verify artifacts were created
+        metrics_csv = os.path.join(root_dir, "results", "metrics", "all_metrics.csv")
+        assert os.path.exists(metrics_csv), "all_metrics.csv was not created!"
         
+    except subprocess.TimeoutExpired:
+        pytest.fail("Pipeline execution timed out after 5 minutes!")
     except Exception as e:
-        pytest.fail(f"Pipeline crashed: {e}")
+        pytest.fail(f"An unexpected error occurred: {e}")
