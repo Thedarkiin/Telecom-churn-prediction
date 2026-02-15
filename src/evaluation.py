@@ -315,3 +315,48 @@ def evaluate_models(models, X_test, y_test, optimal_thresholds=None, feature_nam
     logger.info("Saved all metrics to all_metrics.csv")
     
     return dfm
+
+
+def plot_train_test_comparison(models, X_train, y_train, X_test, y_test, output_dir):
+    """
+    Plot Train vs Test performance to detect Overfitting/Underfitting.
+    """
+    metrics = []
+    
+    for name, model in models.items():
+        # Train Score
+        if hasattr(model, 'predict'):
+            train_pred = model.predict(X_train)
+            test_pred = model.predict(X_test)
+            
+            # Use F1 Score as main metric
+            train_score = f1_score(y_train, train_pred, zero_division=0)
+            test_score = f1_score(y_test, test_pred, zero_division=0)
+            
+            metrics.append({
+                'Model': name,
+                'Set': 'Train',
+                'F1 Score': train_score
+            })
+            metrics.append({
+                'Model': name,
+                'Set': 'Test',
+                'F1 Score': test_score
+            })
+            
+    if not metrics:
+        return
+        
+    df = pd.DataFrame(metrics)
+    
+    plt.figure(figsize=(10, 6))
+    sns.barplot(data=df, x='Model', y='F1 Score', hue='Set', palette=['#1f77b4', '#ff7f0e'])
+    plt.title("Train vs Test Performance (Overfitting Check)")
+    plt.ylim(0, 1.0)
+    plt.axhline(0.8, color='gray', linestyle='--', alpha=0.5, label='Target (0.8)')
+    plt.legend()
+    
+    save_plot(plt.gcf(), "overfitting_check.png", output_dir)
+    plt.close()
+    logger.info("Saved overfitting check plot to overfitting_check.png")
+

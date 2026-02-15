@@ -143,6 +143,13 @@ def main():
     metrics_df_f1 = evaluate_models(models, X_test, y_test, optimal_thresholds_f1, feature_names)
     metrics_df_f1['threshold_type'] = 'f1'
     
+    metrics_df_f1 = evaluate_models(models, X_test, y_test, optimal_thresholds_f1, feature_names)
+    metrics_df_f1['threshold_type'] = 'f1'
+    
+    # NEW: Overfitting Check
+    from src.evaluation import plot_train_test_comparison
+    plot_train_test_comparison(models, X_train, y_train, X_test, y_test, Config.METRICS_PATH)
+    
     # Combine both results
     import pandas as pd
     metrics_df = pd.concat([metrics_df_recall, metrics_df_f1], ignore_index=True)
