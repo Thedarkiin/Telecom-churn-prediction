@@ -35,6 +35,7 @@ jobs:
     
     - name: Run Smoke Tests
       run: |
+        export PYTHONPATH=$PYTHONPATH:.
         pytest tests/
 
     - name: Validate imports
