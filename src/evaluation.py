@@ -263,8 +263,8 @@ def evaluate_models(models, X_test, y_test, optimal_thresholds=None, feature_nam
             # ROC curve
             plot_roc_curve(model, X_test, y_test, name, Config.METRICS_PATH)
             
-            # PR curve
-            plot_precision_recall_curve(model, X_test, y_test, name, Config.METRICS_PATH)
+            # PR curve - Redundant with ROC for high-level check
+            # plot_precision_recall_curve(model, X_test, y_test, name, Config.METRICS_PATH)
             
             # Save predictions
             if hasattr(model, 'predict_proba'):

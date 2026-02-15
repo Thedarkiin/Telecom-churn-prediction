@@ -41,12 +41,6 @@ This document provides a comprehensive, file-by-file explanation of the entire R
 *   **Purpose**: A high-level visual representation of the system architecture.
 *   **Content**: Shows the flow from Raw Data -> Preprocessing -> Model Training -> API Serving -> End User. It illustrates how the "Offline Training" pipeline feeds into the "Online Serving" application.
 
-### 7. `ARCHITECTURE.html`
-**Role:** Interactive Architecture.
-*   **Purpose**: An interactive HTML version of the system design, often generated for presentations or documentation sites.
-
----
-
 ## 📁 src/: The Core Logic
 
 ### 8. `src/config.py`

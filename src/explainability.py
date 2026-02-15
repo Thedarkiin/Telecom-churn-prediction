@@ -65,19 +65,19 @@ def explain_with_shap(model, X, feature_names, output_dir, max_display=20):
     if isinstance(shap_values, list):
         shap_values = shap_values[1]  # For binary classification, use positive class
     
-    # 1. Summary plot (bar)
-    plt.figure(figsize=(10, 8))
-    shap.summary_plot(
-        shap_values, X, 
-        feature_names=feature_names, 
-        plot_type="bar",
-        max_display=max_display,
-        show=False
-    )
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, "shap_summary_bar.png"), dpi=150, bbox_inches='tight')
-    plt.close()
-    logger.info("Saved SHAP bar summary plot")
+    # 1. Summary plot (bar) - Redundant with Beeswarm
+    # plt.figure(figsize=(10, 8))
+    # shap.summary_plot(
+    #     shap_values, X, 
+    #     feature_names=feature_names, 
+    #     plot_type="bar",
+    #     max_display=max_display,
+    #     show=False
+    # )
+    # plt.tight_layout()
+    # plt.savefig(os.path.join(output_dir, "shap_summary_bar.png"), dpi=150, bbox_inches='tight')
+    # plt.close()
+    # logger.info("Saved SHAP bar summary plot")
     
     # 2. Summary plot (beeswarm)
     plt.figure(figsize=(10, 8))
